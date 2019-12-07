@@ -1,0 +1,134 @@
+<!DOCTYPE HTML>
+<!--
+	Future Imperfect by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Compiled Thoughts - Nom Tutorial</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+		<link rel="manifest" href="site.webmanifest" />
+	</head>
+	<body class="single is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<h1><a href="index.html">Compiled Thoughts</a></h1>
+						<nav class="links">
+							<ul>
+								<li><a href="https://benkay.net/">benkay.net</a></li>
+							</ul>
+						</nav>
+						<nav class="main">
+							<ul>
+								<li class="search">
+									<a class="fa-search" href="#search">Search</a>
+									<form id="search" method="get" action="https://www.google.com/search" onsubmit="google_site_search(this)">
+										<input type="text" name="q" placeholder="Search" />
+									</form>
+								</li>
+								<li class="menu">
+									<a class="fa-bars" href="#menu">Menu</a>
+								</li>
+							</ul>
+						</nav>
+					</header>
+
+				<!-- Menu -->
+					<section id="menu">
+
+						<!-- Search -->
+							<section>
+								<form class="search" method="get" action="https://www.google.com/search" onsubmit="google_site_search(this)">
+									<input type="text" name="q" placeholder="Search" />
+								</form>
+							</section>
+
+						<!-- Links -->
+							<section>
+								<ul class="links">
+									<li>
+										<a href="https://benkay.net/">
+											<h3>benkay.net</h3>
+											<p>Visit my personal website</p>
+										</a>
+									</li>
+									<li>
+										<a href="https://github.com/benkay86/">
+											<h3>GitHub</h3>
+											<p>Browse my GitHib repositories</p>
+										</a>
+									</li>
+								</ul>
+							</section>
+					</section>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<article class="post">
+								<header>
+									<div class="title">
+										<h2><a href="#">Nom Tutorial</a></h2>
+										<p>Taking a bite out of Rust&apos;s parser combinator crate</p>
+									</div>
+									<div class="meta">
+										<time class="published" datetime="2015-11-01">November 22, 2019</time>
+										<a href="https://benkay.net/" target="_blank" class="author"><span class="name">Benjamin Kay</span><img src="images/avatar.jpg" /></a>
+									</div>
+								</header>
+								<a href="images/full/donut-bite.jpg" class="image featured"><img src="images/high/donut-bite.jpg" alt="donut with bite missing" /></a>
+								<p><a href="https://github.com/Geal/nom">Nom</a> is a powerful parser/combinator library written in Rust for binary and text streams.  Its applications are similar to that of regular expressions, but Nom offers better performance, type safety, and error handling.  This tutorial supplements the official documentation for the newly-released version 5 of the library.</p>
+								<p>Nom's official documentation includes trivially simple examples (e.g. how to parse a hexadecimal RGB color code) and very complicated examples (e.g. how to parse json).  When I first learned nom I found a steep learning curve in between the simple and complex examples.  Furthermore, versions of nom prior to 5 (along with most of the existing documentation) make heavy use macros.  From nom 5.0 onward macros are soft-deprecated in favor of functions.  This tutorial aims to fill the gap between simple and complex parsers by parsing the contents of <code>/proc/mounts</code>, and it demonstrates the use of functions instead of macros.</p>
+								<p>So without further adieu, if this sounds interesting to you, go <a href="https://github.com/benkay86/nom-tutorial/">check out the tutorial</a> hosted on GitHub.  Please <a href="mailto:benjamin@benkay.net?subject=Nom Tutorial">e-mail me</a> with comments, suggestions, or if you found the tutorial helpful!</p>
+								<footer>
+									<ul class="actions">
+										<li><a href="https://github.com/benkay86/nom-tutorial" class="button large">Tutorial on GitHub</a></li>
+									</ul>
+									<ul class="stats">
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Like: Nom Tutorial&body=Thanks!  Please tell me why you liked this post and consider giving my GitHib repository a star https://github.com/benkay86/nom-tutorial" class="icon solid fa-heart">31</a></li>
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Comment: Nom Tutorial&body=E-mail me your comment.  If it's appropriate and you're not a robot then I'll publish it on the blog." class="icon solid fa-comment">0</a></li>
+									</ul>
+								</footer>
+							</article>
+
+						<!-- Pagination -->
+							<ul class="disabled actions pagination">
+								<li><a href="" class="disabled button large previous"><span class="icon solid fa-history"></span>&nbsp;Previous Post</a></li>
+								<li><a href="fallible-iterators-in-rust.html" class="button large next">Next Post&nbsp;<span class="icon solid fa-arrow-circle-right"></span></a></li>
+							</ul>
+						
+					</div>
+
+				<!-- Footer -->
+					<section id="footer">
+						<ul class="icons">
+							<li><a href="https://benkay.net/" class="icon solid fa-globe"><span class="label">Homepage</span></a></li>
+							<li><a href="mailto:benkay.net" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+						</ul>
+						<p class="copyright">&copy; Benjamin Kay. Design: <a href="http://html5up.net">HTML5 UP</a>.</p>
+					</section>
+
+			</section>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

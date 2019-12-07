@@ -1,0 +1,166 @@
+<!DOCTYPE HTML>
+<!--
+	Future Imperfect by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Compiled Thoughts - Fallible Iterators in Rust</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+		<link rel="manifest" href="site.webmanifest" />
+	</head>
+	<body class="single is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<h1><a href="index.html">Compiled Thoughts</a></h1>
+						<nav class="links">
+							<ul>
+								<li><a href="https://benkay.net/">benkay.net</a></li>
+							</ul>
+						</nav>
+						<nav class="main">
+							<ul>
+								<li class="search">
+									<a class="fa-search" href="#search">Search</a>
+									<form id="search" method="get" action="https://www.google.com/search" onsubmit="google_site_search(this)">
+										<input type="text" name="q" placeholder="Search" />
+									</form>
+								</li>
+								<li class="menu">
+									<a class="fa-bars" href="#menu">Menu</a>
+								</li>
+							</ul>
+						</nav>
+					</header>
+
+				<!-- Menu -->
+					<section id="menu">
+
+						<!-- Search -->
+							<section>
+								<form class="search" method="get" action="https://www.google.com/search" onsubmit="google_site_search(this)">
+									<input type="text" name="q" placeholder="Search" />
+								</form>
+							</section>
+
+						<!-- Links -->
+							<section>
+								<ul class="links">
+									<li>
+										<a href="https://benkay.net/">
+											<h3>benkay.net</h3>
+											<p>Visit my personal website</p>
+										</a>
+									</li>
+									<li>
+										<a href="https://github.com/benkay86/">
+											<h3>GitHub</h3>
+											<p>Browse my GitHib repositories</p>
+										</a>
+									</li>
+								</ul>
+							</section>
+					</section>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<article class="post">
+								<header>
+									<div class="title">
+										<h2><a href="#">Fallible Iterators in Rust</a></h2>
+										<p><a href="https://crates.io/crates/resultit">resultit</a>: A lightweight crate for iterating over Results</p>
+									</div>
+									<div class="meta">
+										<time class="published" datetime="2015-11-01">November 22, 2019</time>
+										<a href="https://benkay.net/" target="_blank" class="author"><span class="name">Benjamin Kay</span><img src="images/avatar.jpg" /></a>
+									</div>
+								</header>
+								<a href="images/full/tesla-body-assembly-line.jpg" class="image featured"><img src="images/high/tesla-body-assembly-line.jpg" alt="robotic assembly line" /></a>
+								<p>Rust iterators and the associated framework of adapters/combinators are a powerful assembly line for transforming one sequence into another.  The <a href="https://crates.io/crates/resultit">ResultIt</a> crate provides an ergonomic way to handle iterators that can fail, i.e. iterators of Result that could countain an Error.  Take, for example, the common problem of flattenning an iterator of nested results.</p>
+								<h3>Background</h3>
+								<p>If you've every written code like the following then you've used a rust iterator:<pre><code>let v: Vec&lt;i32&gt; = vec![1, 2, 3];
+for i in v {
+	println!("{}", i);
+}</code></pre> Rust iterators implement a function <code>next()</code> that returns <code>Option&lt;Item&gt;</code> where <code>Item</code> is the type over which the iterator is iterating.  The above example can be de-sugared as:<pre><code>let v: Vec&lt;i32&gt; = vec![1, 2, 3];
+let iter = v.into_iter(); // satisfies trait bound Iterator&lt;Item=i32&gt;
+while let Some(i) = iter.next() {
+	println!("{}", i); // i has type i32
+}
+// Output:
+// 1
+// 2
+// 3</code></pre> Here <code>iter</code> is an iterator over the vector <code>v</code> and satisfies the trait bound <code>Iterator&lt;Item=i32&gt;</code>.  The <code>while let</code> statement executes as long as <code>iter.next()</code> returns <code>Some(i)</code> where <code>i</code> is the next integer in the vector.  After <code>iter.next()</code> returns <code>Some(3)</code>, the next call to <code>iter.next()</code> returns <code>None</code> and the <code>while let</code> loop ends.  Of course, usually you would use the more idiomatic constructs <code>for i in vec</code> or <code>for i in iter</code> or <code>iter.for_each(|i| println!("{}", i)</code> and the <code>Option&lt;Item&gt;</code> would be unwrapped for you automatically.</p>
+								<p>Rust iterators get even more interesting when we use adapters/combinators to transform them.  Suppose we want to output each number in the vector plus one.  We could write:<pre><code>for i in v {
+	println!("{}", i + 1)
+}</code></pre>Or somewhat more generically using the <code><a href="https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.map">map()</a></code> adapter/combinator:<pre><code>v.into_iter().map(|i| i + 1).for_each(|i| println!("{}", i));
+</code></pre></p>
+								<h3>Iterators of Results</h3>
+								<p>As we all know, not everything in programming goes as planned, and iterators get more complicated when <code>Item</code> is a <code>Result</code> that could be an <code>Err</code>.  This can become especially problematic in chains of iterator adapter/combinators.  What should each subsequent adapter/combinator do with an error it is not expecting?  Take the following example, which does not compile:<pre><code>let v: Vec&lt;Result&lt;i32, MyError&gt;&gt; = vec![1, MyError{}, 3];
+v.into_iter().map(|i| i + 1).for_each(println!("{}", i));
+// Doesn't compile!</code></pre>This doesn't compile because we can't add 1 to a <code>Result&lt;i32,MyError&gt;</code> without unwrapping it first.  But if we simply call <code>unwrap()</code> our code will compile, but it will panic on the first error, which is probably not what we want:<pre><code>let v: Vec&lt;Result&lt;i32, MyError&gt;&gt; = vec![1, MyError{}, 3];
+v.into_iter().map(|i| i.unwrap() + 1).for_each(println!("{}", i));
+// Output:
+// 1
+// Program panics!</code></pre></p>
+								<h3>The ResultIt Crate</h3>
+								<p>If this problem looks familiar to you, then you may be interested in <a href="https://crates.io/crates/resultit">ResultIt</a>, a lightweight, dependency-free, Rust crate I wrote that provides iterator adapter/combiantors for handling fallible iterators of <code>Result</code>.  It can help you with:
+									<ul>
+										<li>Flattening an iterator of results, see <a href="https://docs.rs/resultit/0.1.0/resultit/flatten_results/trait.FlattenResults.html">flatten_results()</a></li>
+										<li>Flattening or erasing error types in an iterator of nested results, see <a href="https://docs.rs/resultit/0.1.0/resultit/type.TryResult.html">TryResult</a></li>
+										<li>Stopping iteration after the first error, see <a href="https://docs.rs/resultit/0.1.0/resultit/stop_after_error/trait.StopAfterError.html">stop_after_error()</a></li>
+									</ul>See the <a href="https://github.com/benkay86/resultit">GitHub repository</a> and the <a href="https://docs.rs/resultit/">documentation</a> for more information and examples.  Result flattening based on the solution proposed by redditor <a href="https://www.reddit.com/user/earthengine/">earthengine</a>in <a href="https://www.reddit.com/r/rust/comments/9u6846/rust_puzzle_flatten_a_nested_iterator_of_results/">this post</a> and on the <a href="https://play.rust-lang.org/?version=stable&mode=debug&edition=2015&gist=30e0fb57a8ba63777052a344054b22c0">rust playground</a>.  Please <a href="mailto:benjamin@benkay.net?subject=Fallible Iterators in Rust">e-mail me</a> with comments, suggestions, or if you found this crate helpful!</p>
+								<footer>
+									<ul class="actions">
+										<li><a href="https://github.com/benkay86/resultit" class="button large">GitHub Repository</a></li>
+										<li><a href="https://docs.rs/resultit/" class="button large">Documentation</a></li>
+										<li><a href="https://crates.io/crates/resultit" class="button large">Rust Crate</a></li>
+									</ul>
+									<ul class="stats">
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Like: Fallible Iterators in Rust&body=Thanks!  Please tell me why you liked this post and consider giving my GitHib repository a star https://github.com/benkay86/resultit" class="icon solid fa-heart">0</a></li>
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Comment: Fallible Iterators in Rust&body=E-mail me your comment.  If it's appropriate and you're not a robot then I'll publish it on the blog." class="icon solid fa-comment">0</a></li>
+									</ul>
+								</footer>
+							</article>
+
+						<!-- Pagination -->
+							<ul class="actions pagination">
+								<li><a href="nom-tutorial.html" class="button large previous"><span class="icon solid fa-history"></span>&nbsp;Previous Post</a></li>
+								<li><a href="" class="disabled button large next">Next Post&nbsp;<span class="icon solid fa-arrow-circle-right"></span></a></li>
+							</ul>
+						
+					</div>
+
+				<!-- Footer -->
+					<section id="footer">
+						<ul class="icons">
+							<li><a href="https://benkay.net/" class="icon solid fa-globe"><span class="label">Homepage</span></a></li>
+							<li><a href="mailto:benkay.net" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+						</ul>
+						<p class="copyright">&copy; Benjamin Kay. Design: <a href="http://html5up.net">HTML5 UP</a>.</p>
+					</section>
+
+			</section>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

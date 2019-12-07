@@ -1,0 +1,221 @@
+<!DOCTYPE HTML>
+<!--
+	Future Imperfect by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Compiled Thoughts</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+		<link rel="manifest" href="site.webmanifest" />
+		<script>
+			function google_site_search(form) {
+				form.q.value = form.q.value.concat(' site:benkay86.github.io');
+			}
+		</script>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<h1><a href="index.html" onclick="return false;">Compiled Thoughts</a></h1>
+						<nav class="links">
+							<ul>
+								<li><a href="https://benkay.net/">benkay.net</a></li>
+							</ul>
+						</nav>
+						<nav class="main">
+							<ul>
+								<li class="search">
+									<a class="fa-search" href="#search">Search</a>
+									<form id="search" method="get" action="https://www.google.com/search" onsubmit="google_site_search(this)">
+										<input type="text" name="q" placeholder="Search" />
+									</form>
+								</li>
+								<li class="menu">
+									<a class="fa-bars" href="#menu">Menu</a>
+								</li>
+							</ul>
+						</nav>
+					</header>
+
+				<!-- Menu -->
+					<section id="menu">
+
+						<!-- Search -->
+							<section>
+								<form class="search" method="get" action="https://www.google.com/search" onsubmit="google_site_search(this)">
+									<input type="text" name="q" placeholder="Search" />
+								</form>
+							</section>
+
+						<!-- Links -->
+							<section>
+								<ul class="links">
+									<li>
+										<a href="https://benkay.net/">
+											<h3>benkay.net</h3>
+											<p>Visit my personal website</p>
+										</a>
+									</li>
+									<li>
+										<a href="https://github.com/benkay86/">
+											<h3>GitHub</h3>
+											<p>Browse my GitHib repositories</p>
+										</a>
+									</li>
+								</ul>
+							</section>
+					</section>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<article class="post">
+								<header>
+									<div class="title">
+										<h2><a href="fallible-iterators-in-rust.html">Fallible Iterators in Rust</a></h2>
+										<p><a href="https://crates.io/crates/resultit">resultit</a>: A lightweight crate for iterating over Results</p>
+									</div>
+									<div class="meta">
+										<time class="published" datetime="2015-11-01">November 22, 2019</time>
+										<a href="https://benkay.net/" target="_blank" class="author"><span class="name">Benjamin Kay</span><img src="images/avatar.jpg" alt="" /></a>
+									</div>
+								</header>
+								<a href="fallible-iterators-in-rust.html" class="image featured"><img src="images/low/tesla-body-assembly-line.jpg" alt="robotic assembly line" /></a>
+								<p>Rust iterators and the associated framework of adapters/combinators are a powerful assembly line for transforming one sequence into another.  The <a href="https://crates.io/crates/resultit">ResultIt</a> crate provides an ergonomic way to handle iterators that can fail, i.e. iterators of Result that could countain an Error.  Take, for example, the common problem of flattenning an iterator of nested results.</p>
+								<footer>
+									<ul class="actions">
+										<li><a href="fallible-iterators-in-rust.html" class="button large">Continue Reading</a></li>
+									</ul>
+									<ul class="stats">
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Like: Fallible Iterators in Rust&body=Thanks!  Please tell me why you liked this post and consider giving my GitHib repository a star https://github.com/benkay86/resultit" class="icon solid fa-heart">0</a></li>
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Comment: Fallible Iterators in Rust&body=E-mail me your comment.  If it's appropriate and you're not a robot then I'll publish it on the blog." class="icon solid fa-comment">0</a></li>
+									</ul>
+								</footer>
+							</article>
+
+						<!-- Post -->
+							<article class="post">
+								<header>
+									<div class="title">
+										<h2><a href="nom-tutorial.html">Nom Tutorial</a></h2>
+										<p>Taking a bite out of Rust&apos;s parser combinator crate</p>
+									</div>
+									<div class="meta">
+										<time class="published" datetime="2015-10-25">September 3, 2019</time>
+										<a href="https://benkay.net/" target="_blank" class="author"><span class="name">Benjamin Kay</span><img src="images/avatar.jpg" /></a>
+									</div>
+								</header>
+								<a href="nom-tutorial.html" class="image featured"><img src="images/low/donut-bite.jpg" alt="donut with bite missing" /></a>
+								<p><a href="https://github.com/Geal/nom">Nom</a> is a powerful parser/combinator library written in Rust for binary and text streams.  Its applications are similar to that of regular expressions, but Nom offers better performance, type safety, and error handling.  This tutorial supplements the official documentation for the newly-released version 5 of the library.</p>
+								<footer>
+									<ul class="actions">
+										<li><a href="nom-tutorial.html" class="button large">Continue Reading</a></li>
+									</ul>
+									<ul class="stats">
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Like: Nom Tutorial&body=Thanks!  Please tell me why you liked this post and consider giving my GitHib repository a star https://github.com/benkay86/nom-tutorial" class="icon solid fa-heart">31</a></li>
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Comment: Nom Tutorial&body=E-mail me your comment.  If it's appropriate and you're not a robot then I'll publish it on the blog." class="icon solid fa-comment">0</a></li>
+									</ul>
+								</footer>
+							</article>
+
+						<!-- Pagination -->
+							<ul class="actions pagination">
+								<li><a href="" class="disabled button large previous"><span class="icon solid fa-history"></span>&nbsp;Older Posts</a></li>
+								<li><a href="" class="disabled button large next">Newer Posts&nbsp;<span class="icon solid fa-arrow-circle-right"></span></a></li>
+							</ul>
+
+					</div>
+
+				<!-- Sidebar -->
+					<section id="sidebar">
+
+						<!-- Intro -->
+							<section id="intro">
+								<a href="logo-full.jpg" class="logo"><img src="images/logo.jpg" alt="Golgi-stained neuron" /></a>
+								<header>
+									<h2>Compiled Thoughts</h2>
+									<p>A programming blog by a neuroscientist</p>
+								</header>
+							</section>
+
+						<!-- Mini Posts -->
+						<!--
+							<section>
+								<div class="mini-posts">
+						-->
+									<!-- Mini Post -->
+									<!--
+										<article class="mini-post">
+											<header>
+												<h3><a href="single.html">Vitae sed condimentum</a></h3>
+												<time class="published" datetime="2015-10-20">October 20, 2015</time>
+												<a href="#" class="author"><img src="images/avatar.jpg" alt="" /></a>
+											</header>
+											<a href="single.html" class="image"><img src="images/pic04.jpg" alt="" /></a>
+										</article>
+									-->
+						<!--
+								</div>
+							</section>
+						-->
+
+						<!-- Posts List -->
+						<!--
+							<section>
+								<ul class="posts">
+									<li>
+										<article>
+											<header>
+												<h3><a href="single.html">Lorem ipsum fermentum ut nisl vitae</a></h3>
+												<time class="published" datetime="2015-10-20">October 20, 2015</time>
+											</header>
+											<a href="single.html" class="image"><img src="images/pic08.jpg" alt="" /></a>
+										</article>
+									</li>
+								</ul>
+							</section>
+						-->
+
+						<!-- About -->
+							<section class="blurb">
+								<h2>About</h2>
+								<p>I am a child neurologist at <a href="https://wuphysicians.wustl.edu/medical-services/specialties/neurology/neurology-pediatric">St. Louis Children&apos;s Hospital</a> and a post-graduate researcher in the <a href="https://dosenbachlab.wustl.edu/">Dosenbach Lab</a>.  My job requires building new software and tools, primarily in C++ and Rust.  I believe the best science, and software, is developed in an open, collaborative environment.  Here you can find a compilation of my thoughts on the technical craft of computer programming.</p>
+								<ul class="actions">
+									<li><a href="https://benkay.net/" class="button">Learn More</a></li>
+								</ul>
+							</section>
+
+						<!-- Footer -->
+							<section id="footer">
+								<ul class="icons">
+									<li><a href="https://benkay.net/" class="icon solid fa-globe"><span class="label">Homepage</span></a></li>
+									<li><a href="mailto:benkay.net" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+								<p class="copyright">&copy; Benjamin Kay. Design: <a href="http://html5up.net">HTML5 UP</a>.</p>
+							</section>
+
+					</section>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

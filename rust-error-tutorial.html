@@ -1,0 +1,672 @@
+<!DOCTYPE HTML>
+<!--
+	Future Imperfect by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Compiled Thoughts - Rust Error TUtorial</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+		<link rel="manifest" href="site.webmanifest" />
+	</head>
+	<body class="single is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<h1><a href="index.html">Compiled Thoughts</a></h1>
+						<nav class="links">
+							<ul>
+								<li><a href="https://benkay.net/">benkay.net</a></li>
+							</ul>
+						</nav>
+						<nav class="main">
+							<ul>
+								<li class="search">
+									<a class="fa-search" href="#search">Search</a>
+									<form id="search" method="get" action="https://www.google.com/search" onsubmit="google_site_search(this)">
+										<input type="text" name="q" placeholder="Search" />
+									</form>
+								</li>
+								<li class="menu">
+									<a class="fa-bars" href="#menu">Menu</a>
+								</li>
+							</ul>
+						</nav>
+					</header>
+
+				<!-- Menu -->
+					<section id="menu">
+
+						<!-- Search -->
+							<section>
+								<form class="search" method="get" action="https://www.google.com/search" onsubmit="google_site_search(this)">
+									<input type="text" name="q" placeholder="Search" />
+								</form>
+							</section>
+
+						<!-- Links -->
+							<section>
+								<ul class="links">
+									<li>
+										<a href="https://benkay.net/">
+											<h3>benkay.net</h3>
+											<p>Visit my personal website</p>
+										</a>
+									</li>
+									<li>
+										<a href="https://github.com/benkay86/">
+											<h3>GitHub</h3>
+											<p>Browse my GitHib repositories</p>
+										</a>
+									</li>
+								</ul>
+							</section>
+					</section>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<article class="post">
+								<header>
+									<div class="title">
+										<h2><a href="#">Rust Error Tutorial</a></h2>
+										<p>Best practices for handling errors in Rust</p>
+									</div>
+									<div class="meta">
+										<time class="published" datetime="2015-11-01">December 14, 2019</time>
+										<a href="https://benkay.net/" target="_blank" class="author"><span class="name">Benjamin Kay</span><img src="images/avatar.jpg" /></a>
+									</div>
+								</header>
+								<a href="images/full/crash-dummy.jpg" class="image featured"><img src="images/high/crash-dummy.jpg" alt="crash dummy" /></a>
+								<p><i>Errare humanum est, perseverare autem diabolicum.</i>  Any non-trivial program will encounter conditions that produce an error.  Any program not written to anticipate these errors is diabolical.  <i>Prima facie</i> Rust appears to make error handling easy with the <code>Result</code> type, and <a href="https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html">The Rust Book</a> does an excellent job explaining how to use it.  Perhaps from overthinking things, or perhaps from too much experience with C++, I nevertheless became confused about the best practices for handling errors in real-world code.  Soon I was longing for the relative simplicity of C++ exceptions and wondering how Rust, a language billed as being safer to use than C++, could lack such fundamental error handling constructs.</p>
+								<p>Fortunately, it turns out that Rust has very powerful, flexible error handling capabilities, and the real problem is that no one can agree on the &quot;best&quot; way to use them.  Look no further than the profundity of <a href="https://blog.yoshuawuyts.com/error-handling-survey/">error crates</a> that have popped up for Rust.  The sheer amount of choice is confusing for a novice in the language!  In this tutorial, rather than develop yet another error handling crate, I will explain the fundamentals of Rust error handling and develop some best practices.  After reading this tutorial you will be able to handle errors gracefully using just the Rust standard library.  You will be able to judge for yourself which error handling crate best suits your coding style, should you choose to use one of them.</p>
+								<h3>Table of Contents</h3>
+								<ol>
+									<li><a href="#result">Result?</a></li>
+									<li><a href="#dont_panic">Don't Panic!</a></li>
+									<li><a href="#dyn_error">dyn Error</a></li>
+									<li><a href="#downcasting">Downcasting</a></li>
+									<li><a href="#custom_errors">Custom Errors</a></li>
+									<li><a href="#chaining">Chaining</a></li>
+									<li><a href="#enum_error">enum Error</a></li>
+									<li><a href="#conclusion">Conclusion</a></li>
+								</ol>
+								<h3 id="result">Result?</h3>
+								<p>Let's begin with a variation on the standard hello world program.  Instead of writing hello world to the standard output (i.e. terminal) we will write it to a file <code>hello.txt</code>.  There are two steps that could go wrong here: <ol><li>We can't open the file for writing, perhaps because we don't have sufficient filesystem permissions.</li><li>We can't write to the file, perhaps because the hard disk is full.</li></ol>  This simple example introduces the question mark operator (formerly the <code>try!()</code> macro) and demonstrates correct, idiomatic error propagation in Rust.  We define a function <code>hello()</code> that performs the actual logic of creating and writing to <code>hello.txt</code> and is called by <code>main()</code>.  The real action happens at line 5 where we call the <code>write!()</code> macro to actually write "Hello world!" to the file.  The <code>write!()</code> macro returns a <code><a href="https://doc.rust-lang.org/std/result/enum.Result.html">Result</a></code> that is <code>Ok(())</code> if the writing was succesful and <code>Err(<a href="https://doc.rust-lang.org/std/io/struct.Error.html">std::io::Error</a>)</code> if there was a problem.  The <code>Result</code> is returned to <code>main()</code> where, good or bad, we will have to deal with it.  (Recall that if we omit the semicolon a function returns the value of its last line.)<pre><code>use std::io::Write; // needed for write!()
+
+fn hello(filename: &amp;std::path::Path) -> Result&lt;(), std::io::Error&gt; {
+	let file = std::fs::File::create(filename)?; // the question mark
+	write!(&amp;file, "Hello world!\n")
+}
+
+fn main() -> Result&lt;(), std::io::Error&gt; {
+	hello(std::path::Path::new("hello.txt"))
+}</code></pre>There are two bits of magic happening here.  First, what happens in <code>main()</code> if the call to <code>hello()</code> returns an <code>Err(std::io::Error)</code>?  It turns out if you write the main function to return a <code>Result&lt;_, Error&gt;</code> then it will automatically return success to the operating system on success, and if an error happens it will return failure and print out the error to the standard error terminal, <code>stderr</code>.  It's a super-convenient way to have your program fail gracefully and propagate the error up to the operating system.</p>
+								<p>The second bit of magic is the question mark <code>?</code> on line 4.  A call to <code><a href="https://doc.rust-lang.org/std/fs/struct.File.html#method.create">File::create()</a></code> could fail and thus returns a <code>Result&lt;File, std::io::Error&gt;</code>.  That's a problem because on the next line <code>write!()</code> expects a <code>File</code>, not a <code>Result</code>.  (Try removing the question mark and the Rust compiler will give you an error.)  In Rust parlance we need to "unwrap" the <code>Result</code> of <code>File::create()</code> before we can use it.  The good new is this is not difficult to do, and the question mark is just syntactic sugar for this:<pre><code>  let file = match std::fs::File::create(filename) {
+		Ok(f) => f,
+		Err(e) => return Err(e)
+	};</code></pre>The question mark operator is just shorthand for a match.  On success the match "unwraps" the <code>Ok(f)</code> to the enclosed <code>f</code>.  On failure the match ends the function <code>hello()</code> early by returning the <code>Err(e)</code>.</p>
+								<p>This may not seem like a big deal, but consider this slightly more complicated example in which we copy the contents of one file to another one line at a time.  Although it's a simple task, there's a lot that can go wrong.  Can you count all the uses of the question mark operator?<pre><code>use std::io::BufRead; // needed for lines()
+use std::io::Write; // needed for writeln!() 
+
+fn copy(infile: &amp;std::path::Path, outfile: &amp;std::path::Path)
+	-> Result&lt;(), std::io::Error&gt; {
+	let infile = std::fs::File::open(infile)?;
+	let infile = std::io::BufReader::new(infile);
+	let outfile = std::fs::File::create(outfile)?;
+	for line in infile.lines() {
+		writeln!(&amp;outfile, "{}", line?)?;
+	}
+	Ok(())
+}
+
+fn main() -> Result&lt;(), std::io::Error&gt; {
+	copy(std::path::Path::new("foo"), std::path::Path::new("bar"))
+}</code></pre>This example also serves to demonstrate another idiom: returning <code>Ok(())</code> from a function.  In the first example the last statement in <code>hello()</code> is the <code>write!()</code> macro, which just happens to return the needed <code>Result</code>.  In this second example the function ends with a <code>for</code> loop, which in Rust always returns <code>()</code>.  Since <code>()</code> is not a <code>Result</code> we have to wrap it in one by returning <code>Ok(())</code> to signify successful completion of the function</p>
+								<p>In summary, the question mark operator <code>?</code> is the idiomatic way of unwrapping a <code>Result</code> in rust.  It is just syntactic sugar for a <code>match</code> that ends the function early by returning an error if one has occurred.  However, as we saw in the second example, that syntactic sugar makes our code much more readable and easy to write!  We also learned that the <code>main()</code> function can itself return a <code>Result</code> to the operating system.  Now that we've learned the correct way to handle errors, in the next section we'll learn about the wrong way to handle them.</p>
+								<h3 id="dont_panic">Don't Panic</h3>
+								<p>Let's revisit the first example from the <a href="#result">previous section</a> in which we write "Hello world!" to a file <code>hello.txt</code>.  We can encounter an error when we open the file, and we can encounter an error again when we try to write to it.  We could have (incorrectly) written the program like this:<pre><code>use std::io::Write; // needed for write!()
+
+fn hello(filename: &amp;std::path::Path) {
+	let file = match std::fs::File::create(filename).unwrap(); {
+	write!(&amp;file, "Hello world!\n").expect("Error writing to file.");
+}
+
+fn main() {
+	hello(std::path::Path::new("hello.txt"));
+}</code></pre>The above code compiles, but it's not a good way to handle errors.  As you'll soon learn you should avoid using <code>unwrap()</code> or <code>expect()</code>.  Let's desugar the above code to see what these functions do:<pre><code>fn hello(filename: &amp;std::path::Path) {
+	let file = match std::fs::File::create(filename) {
+		Ok(f) => f,
+		Err(_) => panic!()
+	};
+	if let Err(_) = write!(&amp;file, "Hello world!\n") {
+		panic!("Error writing to file.");
+	}
+}</code></pre>Aha!  <code>unwrap()</code> desugars to a <code>panic!()</code>, something that (as the title of this section implies) you should not do.  <code>expect()</code> also desugars to a <code>panic!()</code> but prints out an error message too.</p>
+								<p>What's wrong with panicking?  When your program panics it terminates <em>immediately</em>, which isn't always necessary.  In this example, if there is an error opening <code>filename</code> for writing, rather than panicking we could have prompted the use to enter a different file name.  It would have been nice to give the author of <code>main()</code> or the progammer making use of our function/library that choice rather than making his program crash with a <code>panic!()</code>.</p>
+								<p>There is an even more insidious reason not to panic.  Look closely at the above example.  Do you see a call to <code>file.close()</code>?  There isn't one, and in fact if you look at the documentation for <code><a href="https://doc.rust-lang.org/std/fs/struct.File.html">std::fs::File</a></code> there is no <code>close()</code> function!  How can this be?  Objects in Rust that implement the <code><a href="https://doc.rust-lang.org/std/ops/trait.Drop.html">Drop</a></code> trait can define a block of code that is executed when the object is destroyed, or "dropped."  The <code>Drop</code> trait for <code>File</code> closes the file.  At the end of <code>hello()</code> the function's stack is unwound and the <code>file</code> variable that lives on its stack gets dropped, at which point its <code>Drop</code> trait is invoked and file is automatically closed.  It's very ergonomic: you don't have to remember to call a <code>close()</code> function, and you can't forget to close a file by accident!  <a href="http://www.stroustrup.com/index.html">Programming</a> <a href="https://herbsutter.com/">nerds</a> call this paradigm <a href="https://en.cppreference.com/w/cpp/language/raii">RAII</a>: resource allocation is initialziation.</p>
+								<p>Remember how I said <code>panic!()</code> terminates the program immediately?  I mean <em>immediately!</em>  The <code>hello()</code> function never actually returns as it would have if we had used the question mark operator.  Since it does not return, its stack is not unwound.  The variables on its stack are not dropped.  Their <code>Drop</code> traits are not invoked.  And the file is not closed.  In this example it's not a big deal because the operating system will automatically close all open file descriptors when the program terminates.  However, imagine a more complex resource such as a connection to a server where the <code>Drop</code> trait transmits a goodbye message to the server.  The operating system can't possibly know how to do that automatically, so if you panic those resources won't get cleaned up!</p>
+								<p>The pendantic reader will note that in some instances you can use <a href="https://doc.rust-lang.org/nomicon/unwinding.html">unstable features of Rust</a> to unwind after a panic, but there is no guarantee it will work.  If you want your code to unwind after an error then your best bet is not to panic in the first place.</p>
+								<p>All of that being said, there are some instances in which it is acceptable to panic.  If an error is irrecoverable, or if trying to unwind after an error risks data corruption, panicking and terminating the program immediately may be the best option.  For example, in C/C++ accessing memory past the end of an array will (if you're lucky) generate a <a href="https://en.wikipedia.org/wiki/Segmentation_fault">segmentation fault</a> and the program will terminate immediately without unwinding.  Thanks to Rusts's memory safety you will never be able to access memory beyond the end of an array -- your program will reliably panic every time you try.  Why not return an error?  The rationale is that accessing memory beyond the end of an array should never happen if a program is written correctly.  It's not the result of user error or a a faulty network connection -- it's a result of programmer error, a bug.</p>
+								<p>In summary, if you expect an error to arise some of the time your program is executed (e.g. insufficient permission to create a file) then handle it by returning a <code>Result</code>, typically using the question mark <code>?</code> operator.  If an error should never occur, but might arise because the programmer (you) made a mistake, it is reasonable to panic.  However, be warned that once you panic the program cannot recover and, moreover, it will not unwind or clean up resources before terminating.</p>
+								
+								<h3 id="dyn_error">dyn Error</h3>
+								<p>As we saw in the <a href="#result">first section</a>, using the <code>?</code> operator and returning a <code>Result</code> to propagate errors is ergonomic and the preferred way of dealing with errors in Rust.  Let's look at a more complicated example of summing some newline-delimited numbers in a file.  If the input file is:<pre>1
+2
+3
+4</pre>Then the output of our program should be 1 + 2 + 3 + 4 = 10.  We'll write a function <code>count()</code> that takes a file name, reads the file line by line, parses each line to a number, and returns the sum of those numbers.  The inside of our function <code>count()</code> will look something like this:<pre><code>let file = std::fs::File::open(filename)?;
+let file = std::io::BufReader::new(file);
+let mut sum: i32 = 0;
+for line in file.lines() {
+	sum += line?.parse::&lt;i32&gt;()?;
+}
+Ok(sum)</code></pre></p>
+									<p>We can naively declare our function as we did in prior sections as <code>fn count(filename: &amp;std::path::Path) -&gt; Result&lt;i32, std::io::Error&gt;</code>.  The compiler tells us:<pre>error[E0277]: `?` couldn't convert the error to `std::io::Error`
+  --> src/bin/count.rs:17:30
+   |
+   |   sum += line?.parse::&lt;i32&gt;()?;
+   |                              ^
+   |   the trait `std::convert::From&lt;std::num::ParseIntError&gt;` is not implemented for `std::io::Error`
+   |</pre>What happened?  In prior examples all of our errors were of type <code>std::io::Error</code>.  In this example when we convert a line from the file from a string to an integer we get a <code>Result</code> that might contain a <code>std::num::ParseIntError</code>.  The compiler is complaining that our function returns a <code>Result</code> with a <code>std::io::Error</code> when this <code>?</code> operator could return a <code>std::num::ParseIntError</code>.  Unfortunately we're really in a bind!  If we change our function signature to return a <code>Result</code> with a <code>std::num::ParseIntError</code> the compiler will complain that our other <code>?</code> operators could return a <code>std::io::Error</code>.</p>
+								<p>We need a way to write a function signature that follows the rules of the <code>?</code> operator and can return more than one error type.  One way to do this is to return the error as a <a href="https://doc.rust-lang.org/1.30.0/book/2018-edition/ch17-02-trait-objects.html">trait object</a>, a <code>Box&lt;dyn Error&gt;</code>.  Here the <code>dyn</code> signifies the use of a so called "fat pointer" for runtime, dynamic typing.  It means we can return a boxed (i.e. heap-allocated) object of any type that satisfies the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html">std::error::Error</a></code> trait.  Here is the completed example using this strategy:<pre><code>use std::io::BufRead; // needed for lines()
+
+fn count(filename: &amp;std::path::Path) -> Result&lt;i32, std::boxed::Box&lt;dyn std::error::Error&gt;&gt; {
+	let file = std::fs::File::open(filename)?;
+	let file = std::io::BufReader::new(file);
+	let mut sum: i32 = 0;
+	for line in file.lines() {
+		sum += line?.parse::&lt;i32&gt;()?;
+	}
+	Ok(sum)
+}
+
+fn main() -> Result&lt;(), std::boxed::Box&lt;dyn std::error::Error&gt;&gt; {
+	let sum = count(std::path::Path::new("numbers.txt"))?;
+	println!("The sum is: {}", sum);
+	Ok(())
+}</code></pre></p>
+								<p>There is one more caveat, which is that the <code>Error</code> trait does not require its implementations to be thread safe.  Since Rust is designed to be a multithreaded language, it would be a big problem if we could not propagate errors between threads!  Even if our function returns an error object that is thread safe, once that statically-typed object is converted into a dynamically-typed trait object, the compiler no longer knows whether or not it is thread safe.  In essence, if we write our function signatures as they are written above, we "infect" all calling code to be non-thread-safe.  Therefore the best practice for propagating errors using error traits is to also make them <code>Send</code> and <code>Sync</code> by writing our function signature like this:<pre><code>fn count(filename: &amp;std::path::Path)
+	-> Result&lt;
+		i32,
+		std::boxed::Box&lt;dyn
+			std::error::Error
+			+ std::marker::Send
+			+ std::marker::Sync
+		&gt;
+	&gt;</code></pre></p>
+								<p>All those type contraints get to be verbose, so you may find it convenient to define a type alias <code><a href="https://github.com/rust-lang/rfcs/pull/2820">BoxError</a></code> as in the example below.  In fact, this idiom is used so often that there is an <a href="https://github.com/rust-lang/rfcs/pull/2820">RFC to create the BoxError type</a>.  Here is the completed example again using thread-friendly error trait objects:<pre><code>use std::io::BufRead; // needed for lines()
+
+pub type BoxError = std::boxed::Box&lt;dyn
+	std::error::Error   // must implement Error to satisfy ?
+	+ std::marker::Send // needed for threads
+	+ std::marker::Sync // needed for threads
+&gt;;
+
+fn count(filename: &amp;std::path::Path) -> Result&lt;i32, BoxError&gt; {
+	let file = std::fs::File::open(filename)?;
+	let file = std::io::BufReader::new(file);
+	let mut sum: i32 = 0;
+	for line in file.lines() {
+		sum += line?.parse::&lt;i32&gt;()?;
+	}
+	Ok(sum)
+}
+
+fn main() -> Result&lt;(), BoxError&gt; {
+	let sum = count(std::path::Path::new("numbers.txt"))?;
+	println!("The sum is: {}", sum);
+	Ok(())
+}</code></pre></p>
+								<p>In summary, if your function can encounter more than one type of <code>Error</code> then the easiest way to propagate those errors using the question mark operator is to return a boxed error trait.  Rather than simply returning <code>Box&lt;dyn Error&gt;</code> (as you will see in many examples), you should declare the <code>BoxError</code> type alias (see the example above) and return a <code>Result&lt;_, BoxError&gt;</code>.  Using this <code>BoxError</code> type will make your code behave better in a multithreaded environment.</p>
+								<h3 id="downcasting">Downcasting</h3>
+								<p>In the preceding sections we have focused on how to propagate an error.  Let's return to our example from the <a href="#result">first section</a> and think about how to handle and possibly recover from an error.  If a function returns <code>Err(std::io::Error)</code> what we can we do with that?  Let's look at the documentation for <code><a href="https://doc.rust-lang.org/std/io/struct.Error.html">std::io::Error</a></code> to find out.  It looks like this type implements the <code>Display</code> and <code>Debug</code> traits.  In fact, if we look at the documentation for the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html">Error</a></code> trait, we see that <em>all</em> errors have to implement these traits.  That means we could write code like the following:<pre><code>use std::io::Write; // needed for writeln!()
+use std::io::BufRead; // needed for read_line()
+
+// our original function that writes "Hello world!" to a file
+fn hello(filename: &amp;std::path::Path) -&gt; Result&lt;(), std::io::Error&gt; {
+	let file = std::fs::File::create(filename)?;
+	writeln!(&amp;file, "Hello world!")
+}
+
+fn main() -&gt; Result&lt;(), std::io::Error&gt; {
+	let mut path = std::string::String::new();
+	while let Err(e) = {
+		print!("Enter a path to a file: "); // prompt user for input
+		std::io::stdout().flush()?;
+		std::io::stdin().lock().read_line(&amp;mut path)?; // read input
+		let newline: &amp;[_] = &amp;['\r', '\n']; // trim trailing newline
+		hello(std::path::Path::new(path.trim_end_matches(newline)))
+	} {
+		// if hello() returned an error then notify user and try again
+		eprintln!("An error occured writing to: {}Details: {}", path, e);
+	}
+	Ok(())
+}</code></pre><pre>$ cargo run
+Enter a path to a file: /root/foo
+An error occured writing to: /root/foo
+Details: Permission denied (os error 13)
+Enter a path to a file:</pre>The <code>while let Err(e)</code> matches the last line of the <code>while</code> statement, which is our call to <code>hello()</code>.  If an error occurs then the following block containing <code>eprintn!()</code> is executed to print an error message to the standard error terminal, <code>stderr</code>.  Then the <code>while</code> loop repeats, prompting the user to try entering another file path.  If <code>hello()</code> returns <code>Ok(())</code> then the <code>while</code> loop terminates and the program ends.</p>
+									<p>We can get even more sophisticated by customizing our error message.  Again looking at <code><a href="https://doc.rust-lang.org/std/io/struct.Error.html">std::io::Error</a></code> we discover <code>kind()</code> and <code>raw_os_error()</code> functions that allow us to reformat the error message in the following tongue-and-cheek example:<pre><code>		// if hello() returned an error then notify user and try again
+		eprint!("Good sir, I regret to inform you that I could not write to: {}", path);
+		eprintln!("Indubitably, I did encounter an error of type {:?}.", e.kind());
+		if let Some(code) = e.raw_os_error() {
+			eprintln!("The secret error code was numbered: {}", code);
+		}</code></pre><pre>$ cargo run
+Enter a path to a file: /root/foo
+Good sir, I regret to inform you that I could not write to: /root/foo
+Indubitably, I did encounter an error of type PermissionDenied.
+The secret error code was numbered: 13
+Enter a path to a file:</pre>What fun!  More seriously, we could programmatically match on <code>ErrorKind</code> or the integer value of <code>raw_os_error()</code> to make our program react differently to specific input/output errors, for instance, handling a <code>PermissionDenied</code> error differently from a <code>WriteZero</code> error.</p>
+									<p>Let's get more advanced and tro to develop our counting example from the <a href="#dyn_error">dyn Error</a> section.<pre><code>pub type BoxError = std::boxed::Box&lt;dyn
+	std::error::Error   // must implement Error to satisfy ?
+	+ std::marker::Send // needed for threads
+	+ std::marker::Sync // needed for threads
+&gt;;
+
+use std::io::BufRead; // needed for lines()
+
+fn count(filename: &amp;std::path::Path) -&gt; Result&lt;i32, BoxError&gt; {
+	let file = std::fs::File::open(filename)?;
+	let file = std::io::BufReader::new(file);
+	let mut sum: i32 = 0;
+	for line in file.lines() {
+		sum += line?.parse::&lt;i32&gt;()?;
+	}
+	Ok(sum)
+}
+
+fn main() -&gt; Result&lt;(), BoxError&gt; {
+	match count(std::path::Path::new("numbers.txt")) {
+		Ok(sum) =&gt; {
+			println!("The sum is: {}", sum);
+			Ok(())
+		}
+		Err(e) =&gt; {
+			eprintln!("An error occured: {}", e);
+			Err(e)
+		}
+	}
+}</code></pre>So far so good.  We can match on the <code>Result</code> of the <code>count()</code> function and print out the sum of the lines in the file if it worked, or else print out the error message.  This works because the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html">Error</a></code> trait implements the <code>Display</code> trait, so we can <code>eprintln!("{}", e)</code> any <code>let e: BoxError</code>.</p>
+								<p>What if we want to get fancy and reformat the error message, or to programatically handle different kinds of <code>std::io::Error</code> differently?  Naively we can try:<pre><code>		Err(e) => {
+			eprintln!("An error occured of kind: {:?}", e.kind());
+			Err(e)
+		}</code></pre><pre>   |
+   |             eprintln!("An error occured of kind: {:?}", e.kind());
+   |                                                           ^^^^
+   | method not found in `std::boxed::Box&lt;dyn std::error::Error + std::marker::Send + std::marker::Sync&gt;`
+</pre>Uh-oh, what happened here?  The Rust compiler is telling us that the error <code>e</code> doesn't have a method <code>kind()</code>.  But we know from the prior example that <code>std::io::Error</code> does have a method <code>kind()</code>, so what gives here?  Our method <code>count()</code> can actually return more than one error type through the error trait object <code>BoxError</code>.  The error might be a <code>std::io::Error</code>, but it might also be a <code>std::num::ParseIntError</code>, the latter of which does not have a <code>kind()</code> method.  We won't know which type of error (if any) we encountered until runtime, so there's no way for the compiler to know if <code>e</code> has a <code>kind()</code> method or not; it will conservatively assume not and generate a compilation error.</p>
+								<p>This seems like a pretty big problem if the only thing we can do with <code>BoxError</code> is to <code>Display</code> or <code>Debug</code> it.  Fortunately, there <em>is</em> a mechanism to get at the underlying error type.  At runtime the Rust language will do its best to keep track of what type of error is in the <code>BoxError</code>.  We can write code that, at runtime, attempts to cast the <code>BoxError</code> down to its underlying error type.  This technique is called <em>downcasting</em> and the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html">Error</a></code> trait provides several functions for doing it.  This example demonstrates idiomatic use of the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html#method.downcast_ref">downcast_ref()</a></code> function:<pre><code>fn main() -&gt; Result&lt;(), BoxError&gt; {
+	match count(std::path::Path::new("numbers.txt")) {
+		Ok(sum) =&gt; {
+			println!("The sum is: {}", sum);
+			Ok(())
+		}
+		Err(e) =&gt; {
+			if let Some(e) = e.downcast_ref::&lt;std::io::Error&gt;() {
+				eprintln!("An I/O error of kind {:?} occured.", e.kind());
+			}
+			else if let Some(e) = e.downcast_ref::&lt;std::num::ParseIntError&gt;() {
+				eprintln!("There was an error parsing an integer: {}", e);
+			}
+			else {
+				eprintln!("An unknown error occured: {}", &amp;e);
+				eprintln!("Details: {:?}", &amp;e);
+			}
+			Err(e)
+		}
+	}
+}</code></pre>The code <code>e.downcast_ref::&lt;std::io::Error&gt;()</code> returns an <code>Option&lt;&amp;std::io::Error&gt;</code> that is <code>Some(&amp;std::io::Error)</code> if, at runtime, the error <code>e</code> is an I/O error, or <code>None</code> otherwise.  (By the way, the <code>::&lt;&gt;()</code> syntax is affectionately known in Rust as the <a href="https://github.com/jplatte/turbo.fish">turbofish</a>.)  Within the <code>if let Some(e)</code> block we can treat <code>e</code> as reference to whatever conrete error type we attempted to downcast it to.  In the final <code>else</code> statement we handle the case where we failed to downcast <code>e</code> to anything and use the generic <code>Display</code> and <code>Debug</code> traits implemented for all <code>Error</code> traits to print out as much information as we can.</p>
+								<p>In summary, we can <code>match</code> on a <code>Result</code> to explicitly handle errors.  We can attempt to recover from the error or re-propagate it up the call stack.  Each type of error implements a different set of methods for getting more specific information about that error type.  When dealing with a function that could return more than one type of error at runtime through <code>BoxError</code> we can downcast to the underlying error types we would like to explicitly handle using, for example, <code>downcast_ref()</code>.  We can also <code>eprintln!("{}")</code> any <code>BoxError</code> without downcasting by using the <code>Display</code> and <code>Debug</code> traits implemented for all <code>Error</code> trait objects.  This combination of methodologies allows us to ergonomically dispatch and handle dynamically-typed errors at runtime in a way that is analagous to C++'s exceptions.</p>
+								<h3 id="custom_errors">Custom Errors</h3>
+								<p>Let's take the simple hello world example from the <a href="#result">the first section</a> and up the stakes a little bit:<pre><code>use std::io::Write; // needed for write!()
+
+fn launch(silo: u32) -&gt; Result&lt;(), std::io::Error&gt; {
+	let path = format!("/dev/ignition{}", silo);
+	let file = std::fs::File::create(std::path::Path::new(&amp;path))?;
+	writeln!(&amp;file, "1")
+}
+
+fn main() -&gt; Result&lt;(), std::io::Error&gt; {
+	launch(1) // launch missle from silo 1
+}</code></pre><pre>$ cargo run
+Error: Os { code: 13, kind: PermissionDenied, message: "Permission denied" }</pre>It looks like we now have a program that launches a missle.  (In this early version the targeting and guidance system hasn't been implemented yet.)  The user calls a function <code>launch()</code> that takes a silo number.  The function writes <code>1</code> to <code>/dev/ignitionN</code> where <code>N</code> corresponds to the silo number.  When we attempt to run the program we get an error because we don't have permission to write to <code>/dev</code>.  (Warning: don't attempt to run this code if your computer is actually connected to a missle launcher.)  The error is propagated to the operating system from <code>main()</code> and prints out an error message to the standard error terminal <code>stderr</code>.</p>
+								<p>The problem here is that the error "PermissionDenied" isn't very descriptive.  Although technically our program did encounter a <code>std::io::Error</code>, receiving this error type from a function that launches missles doesn't make much sense to the end user.  The officer who commanded the missle launch might not understand what happened.  Did the missle get launched at the enemy or not?  We can make our program easier to debug by creating a custom error type for missle launch failures.  This is a common practice when writing Rust libraries: hide implementation details by abstracting their error types with a custom error type.</p>
+								<p>Fortunately creating a custom error type is easy.  We just have to create a type that implements the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html">Error</a></code> trait.  Looking at the documentation of the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html">Error</a></code> trait there are quite a few traits and methods there!  However, to make a fully-functioning custom error type, we only have to implement the <code><a href="https://doc.rust-lang.org/std/fmt/trait.Display.html">Display</a></code> and <code><a href="https://doc.rust-lang.org/std/fmt/trait.Debug.html">Debug</a></code> traits that control how our error is displayed with <code>eprintln!("{}")</code> and <code>eprintln!("{:?}")</code>, respectively.<pre><code>mod missle {
+	// needed for write!()
+	use std::io::Write;
+
+	// custom error type
+	pub struct LaunchError;
+
+	// implement Display trait
+	impl std::fmt::Display for LaunchError {
+		fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+			write!(f, "An error occurred while launching the missle.")
+		}
+	}
+
+	// implement Debug trait
+	// in this example just do the same thing as Display
+	impl std::fmt::Debug for LaunchError {
+		fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+			&lt;LaunchError as std::fmt::Display&gt;::fmt(self, f)
+		}
+	}
+
+	// implement the Error trait (nothing else to do here)
+	impl std::error::Error for LaunchError { }
+
+	// private function to do the actual missle launching
+	fn launch_missle_(silo: u32) -&gt; Result&lt;(), std::io::Error&gt; {
+		let path = format!("/dev/ignition{}", silo);
+		let file = std::fs::File::create(std::path::Path::new(&amp;path))?;
+		writeln!(&amp;file, "1")
+	}
+
+	// public function for missle launching
+	// converts underlying error type to a LaunchError
+	pub fn launch(silo: u32) -&gt; Result&lt;(), LaunchError&gt; {
+		match launch_missle_(silo) {
+			Ok(ok) =&gt; Ok(ok),
+			Err(_) =&gt; Err(LaunchError{})
+		}
+	}
+}
+
+use missle::*;
+
+fn main() -&gt; Result&lt;(), LaunchError&gt; {
+	launch(1) // launch missle from silo 1
+}</code></pre><pre>$ cargo run
+Error: An error occurred while launching the missle.</pre>Much better, now it's clear from the error message that the missle failed to launch!  Let's step through what happened here.  We create a structure <code>LaunchError</code> that will serve as our custom error type.  We implement the <code><a href="https://doc.rust-lang.org/std/fmt/trait.Display.html">Display</a></code> trait for <code>LaunchError</code> by defining a <code>fmt</code> method that displays the error, in this case by printing out a simple error message.  We must also implement the <code><a href="https://doc.rust-lang.org/std/fmt/trait.Debug.html">Debug</a></code> trait, which normally would print out more detailed information; in this example we just delegate to the <code>Display</code> trait and print out the same message.  Once the <code>Display</code> and <code>Debug</code> traits required by the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html">Error</a></code> trait are implemented we can finally implement the <code>Error</code> trait without actually having to do anything else inside its implementation block.</p>
+								<p>Next let's see how we use our <code>LaunchError</code>.  We create a module <code>mod missle</code> for all our missle launching code and use its public members later on with <code>use missle::*</code>.  Encapsulation through modules is a good programming practice because it saves us from confusing <code>missle::launch()</code> with <code>boat::launch()</code> or <code>cafeteria::lunch()</code>.  In this case it also allows us to declare private functions to properly encapsulate our implmenetation details.  The original <code>launch()</code> function is renamed <code>launch_()</code>.  The absence of a <code>pub</code> keyword before the function name makes it private to the module.  The trailing underscore is used to signify private implementation details by convention, but it does not have any special meaning to the compiler.  We then create a public wrapper <code>pub fn launch()</code> that calles <code>launch_()</code> internally.  If <code>launch_()</code> is successful then <code>launch()</code> passes through the <code>Ok(())</code>.  If an <code>Error</code> occurs the resultant <code>std::io::Error</code> object is dropped and <code>launch()</code> returns a new <code>LaunchError</code> object instead.</p>
+								<p>Just as <code>std::io::Error</code> has <code>kind()</code> and <code>raw_os_error()</code> methods, so can we further customize our <code>LaunchError</code>.  Let's add a method <code>silo()</code> that reports which silo was involved in the failed launch:<pre><code>mod missle {
+	// ...
+	
+	// custom error type
+	pub struct LaunchError {
+		silo: u32 // remember silo in which error occurred
+	}
+	
+	// public method silo() to return the stored silo
+	impl LaunchError {
+		#[allow(unused)]
+		pub fn silo(&amp;self) -&gt; u32 {
+			self.silo
+		}
+	}
+	
+	// implement Display trait
+	impl std::fmt::Display for LaunchError {
+		fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+			write!(f, "An error occurred while launching the missle in silo {}", self.silo)
+		}
+	}
+	
+	// ...
+	
+	// public function for missle launching
+	// converts underlying error type to a LaunchError
+	pub fn launch(silo: u32) -&gt; Result&lt;(), LaunchError&gt; {
+		match launch_missle_(silo) {
+			Ok(ok) =&gt; Ok(ok),
+			Err(_) =&gt; Err(LaunchError{silo: silo})
+		}
+	}
+}
+
+use missle::*;
+
+fn main() -&gt; Result&lt;(), LaunchError&gt; {
+	if let Err(e) = launch(1) { // launch missle from silo 1
+		eprintln!("Uh-oh, there was a problem in silo {}", e.silo());
+		return Err(e)
+	}
+	Ok(())
+}</code></pre><pre>$ cargo run
+Uh-oh, there was a problem in silo 1
+Error: An error occurred while launching the missle in silo 1</pre>Rather than simply being an empty structure, we declare <code>LaunchError</code> to have a private member variable <code>silo</code>.  We declare a public <code>pub fn silo()</code> method that returns the value of <code>silo</code>.  We also improve the <code>Display</code> trait message to include the silo number.  Finally, when creating a new <code>LaunchError</code> object to return from <code>launch()</code>, we store the appropriate silo number in it.</p>
+								<p>In summary, creating custom error types in Rust is quite easy.  We just have to implement the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html">Error</a></code> trait.  The minimum amount of work to do this is to implement the <code><a href="https://doc.rust-lang.org/std/fmt/trait.Display.html">Display</a></code> and <code><a href="https://doc.rust-lang.org/std/fmt/trait.Debug.html">Debug</a></code> traits to control how our error message gets rendered.  (And if we're feeling really lazy we can just make <code>Debug</code> do the same thing as <code>Display</code>).  It is also easy to add additional member variables and methods to our custom error type.  Creating such custom error types is a good programming practice to encapsulate the errors our library might encounter in its implementation details into more descriptive and useful error messages.</p>
+								<h3 id="chaining">Chaining</h3>
+								<p>Let's continue our example of a missle launch system from the <a href="#custom_errors">previous section</a>.  After many millions of dollars of research and development our missle launch function now includes a targeting and guidance system (which, being proprietary, are redacted from the code below).  Of course, with so many more subroutines that can fail, the return type of <code>launch_()</code> had to be changed to a <code>BoxError</code> (see the section on <code><a href="#dyn_error">dyn Error</a></code>).  We've sold hundreds of missle launchers to the military and now take support calls from a tropical island.  One day we get a support call from a general: "The missle failed to launch."  Of course, we expected this might happen eventually &#8212; that's why we wrote our own custom <code>LaunchError</code> type in the first place!  We ask the general what error message he got when he tried to launch the missle.  "It just said 'An error occured while launching the missle in silo 1.'"  Well that doesn't give us much more information.  Can't the general ship the defective launcher back to us for inspection?  "Afraid not.  When the missle didn't launch it got destroyed by enemy bombs."</p>
+								<p>This brings up an interesting problem.  We want to encapsulate errors from our implementation details inside more decriptive errors that add context.  A <code>LaunchError</code> is more descriptive than an <code>std::io::Error</code>.  However, in situations like this, it would also be helpful to know the source of the <code>LaunchError</code> for debugging purposes.  Fortunately, Rust allows us to chain errors together in this way using <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html#method.source">Error::source()</a></code>.<pre><code>pub type BoxError = std::boxed::Box&lt;dyn
+	std::error::Error   // must implement Error to satisfy ?
+	+ std::marker::Send // needed for threads
+	+ std::marker::Sync // needed for threads
+&gt;;
+
+mod missle {
+	// needed for write!()
+	use std::io::Write;
+	
+	// use BoxError inside this module
+	use super::BoxError;
+	
+	// custom error type
+	pub struct LaunchError {
+		silo: u32, // remember silo in which error occurred
+		source: Option&lt;BoxError&gt; // error (if any) that caused this error
+	}
+	
+	// public method silo() to return the stored silo
+	impl LaunchError {
+		#[allow(unused)]
+		pub fn silo(&amp;self) -&gt; u32 {
+			self.silo
+		}
+	}
+	
+	// implement Display trait
+	impl std::fmt::Display for LaunchError {
+		fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+			write!(f, "An error occurred while launching the missle in silo {}", self.silo)?;
+			if let Some(error) = &amp;self.source {
+				write!(f, "\nCaused by: {}", error)?;
+			}
+			Ok(())
+		}
+	}
+	
+	// implement Debug trait
+	// in this example just do the same thing as Display
+	impl std::fmt::Debug for LaunchError {
+		fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+			&lt;LaunchError as std::fmt::Display&gt;::fmt(self, f)
+		}
+	}
+	
+	// implement the Error trait
+	impl std::error::Error for LaunchError {
+		fn source(&amp;self) -&gt; Option&lt;&amp;(dyn std::error::Error + 'static)&gt; {
+			match &amp;self.source {
+				Some(error) =&gt; Some(error.as_ref()),
+				None =&gt; None
+			}
+		}
+	}
+	
+	// private function to do the actual missle launching
+	fn launch_missle_(silo: u32) -&gt; Result&lt;(), BoxError&gt; {
+		let path = format!("/dev/ignition{}", silo);
+		let file = std::fs::File::create(std::path::Path::new(&amp;path))?;
+		writeln!(&amp;file, "1")?;
+		// ...do some other error-prone things required to launch the missle...
+		Ok(())
+	}
+	
+	// public function for missle launching
+	// converts underlying error type to a LaunchError
+	pub fn launch(silo: u32) -&gt; Result&lt;(), LaunchError&gt; {
+		match launch_missle_(silo) {
+			Ok(ok) =&gt; Ok(ok),
+			Err(e) =&gt; Err(LaunchError{silo: silo, source: Some(e)})
+		}
+	}
+}
+
+use missle::*;
+
+fn main() -&gt; Result&lt;(), LaunchError&gt; {
+	launch(1)
+}</code></pre><pre>$cargo run
+Error: An error occurred while launching the missle in silo 1
+Caused by: Permission denied (os error 13)</pre>This is much better!  We can see that the missle failed to launch <em>and</em> that this was caused by a file permission error.  We had to modify our <code>LaunchError</code> type to have an additional member, <code>source</code> (it could have been named anything), which is an <code>Option&lt;BoxError&gt;</code> we use to store the source of the error (or <code>None</code> if there is no source).  Within our implementation block for the <code>Error</code> trait we define the method <code>source()</code> to return the source error.  Although omitted from the example, we could have called this function from <code>main()</code> to programatically inspect the source of the error.  The finishing touch (which is optional) is to modify our <code>Display</code> implementation to print out the source of the error if there is one.</p>
+								<p>By storing errors within errors and implementing <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html#method.source">Error::source()</a></code> we can chain errors together <em>ad infinitum</em>, effectively creating a backtrace.  You could imagine output like: <pre>$ cargo run
+Error: An error occurred while launching the missle in silo 1
+Caused by: Guidance system error
+Caused by: Invalid target coordinates (123, 45b)
+Caused by: Error parsing string into an integer: 45b
+Caused by: invalid digit found in string</pre></p>
+								<p>In summary, you can chain errors togther by storing the source of the error inside your custom error object and implementing <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html#method.source">Error::source()</a></code>.  You can chain multiple errors together to create a kind of backtrace.  By chaining errors togther you can add context to each error as it is propagated up the call stack, but without losing the detail of the original error message.  This is good programming practice and should be employed whenever possible!</p>
+								<h3 id="enum_error">enum Error</h3>
+								<p>If you've read this tutorial straight through then by this point you have become quite expert at handling errors in Rust and can safely <a href="#conclusion">skip this section</a>.  Up until now we have handled situations where a function could return more than one error type using <code>dyn Error</code> trait objects through the <code>BoxError</code> type (refer back to the section on <code><a href="#dyn_error">dyn Error</a></code>).  This strategy has two theoretical disadvantages:
+									<ol>
+										<li>Creating the <code>BoxError</code> involves extra memory allocation on the heap.</li>
+										<li>The caller cannot discern from our function definition what types of error it might return because a <code>BoxError</code> can be any object that implements the <code>Error</code> trait.</li>
+									</ol>The very curious reader may be wondering if we couldn't get around these issues using an <code>enum</code>.  You can, and if we adapt the previous counting example from the <code><a href="#dyn_error">dyn Error</a></code> section it looks something like this:<pre><code>use std::io::BufRead; // needed for lines()
+
+// declare enum to store all possible error types from count()
+enum SomeError {
+	IOError(std::io::Error),
+	NumParseIntError(std::num::ParseIntError)
+}
+
+// implement From trait to convert from each error type into the enum
+impl From&lt;std::io::Error&gt; for SomeError {
+	fn from(error: std::io::Error) -&gt; Self {
+		SomeError::IOError(error)
+	}
+}
+impl From&lt;std::num::ParseIntError&gt; for SomeError {
+	fn from(error: std::num::ParseIntError) -&gt; Self {
+		SomeError::NumParseIntError(error)
+	}
+}
+
+// implement the Error trait on the enum itself
+impl std::fmt::Display for SomeError {
+	fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+		match self {
+			SomeError::IOError(e) =&gt; write!(f, "{}", e),
+			SomeError::NumParseIntError(e) =&gt; write!(f, "{}", e) 
+		}
+	}
+}
+impl std::fmt::Debug for SomeError {
+	fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+		&lt;SomeError as std::fmt::Display&gt;::fmt(self, f)
+	}
+}
+impl std::error::Error for SomeError {
+	fn source(&amp;self) -&gt; Option&lt;&amp;(dyn std::error::Error + 'static)&gt; {
+		match &amp;self {
+			SomeError::IOError(e) =&gt; e.source(),
+			SomeError::NumParseIntError(e) =&gt; e.source()
+		}
+	}
+}
+
+// can fail with a std::io:Error or a std::num::ParseIntError
+// instead of returning a BoxError (i.e. dyn Error) return the SomeError enum
+fn count(filename: &amp;std::path::Path) -&gt; Result&lt;i32, SomeError&gt; {
+	let file = std::fs::File::open(filename)?;
+	let file = std::io::BufReader::new(file);
+	let mut sum: i32 = 0;
+	for line in file.lines() {
+		sum += line?.parse::&lt;i32&gt;()?;
+	}
+	Ok(sum)
+}
+
+fn main() -&gt; Result&lt;(), SomeError&gt; {
+	match count(std::path::Path::new("numbers.txt")) {
+		Ok(sum) =&gt; {
+			println!("The sum is: {}", sum);
+			Ok(())
+		}
+		Err(e) =&gt; {
+			// instead of downcasting just match on the type of the enum
+			match &amp;e {
+				SomeError::IOError(e) =&gt;
+					eprintln!("An I/O error of kind {:?} occured.", e.kind()),
+				
+				SomeError::NumParseIntError(e) =&gt;
+					eprintln!("There was an error parsing an integer: {}", e)
+			}
+			Err(e)
+		}
+	}
+}</code></pre>To make it work we created a <code>enum SomeError</code> that can be either one of the two underlying error types returned by <code>count()</code>.  To make it play nicely with the question mark <code>?</code> operator we implement the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html">Error</a></code> trait on <code>SomeError</code> so that it too can be treated as an error.  We also have to implement the <code><a href="https://doc.rust-lang.org/std/convert/trait.From.html">From</a></code> trait to automatically convert from the underlying error type into the enumeration.</p>
+								<p>Although this technically works, there are several reasons that this strategy isn't idiomatic and why <code>BoxError</code> is generally preferred.  Many of these issues could be overcome by <a href="https://github.com/rust-lang/rfcs/issues/294">anonymous sum types</a>, but there are no plans to implement this feature in rust anytime soon (if ever).</p>
+								<ul>
+									<li>There's an awful lot of boilerplate code for an enumeration that handles just two errors.  If you were going to use this often you would probably want a macro to automatically generate these <code>enum</code> types for you.</li>
+									<li>If you are writing a library with more than one function, which possible errors should you include to include the enumeration?  Should you write a separate enumeration for each function?  One enumeration to cover all the possible error types returned by your library? In the former case, what are you going to name all the different <code>enum</code> types?</li>
+									<li>If you are using error chaining, then calling <code>source()</code> will probably require a heap allocation and can return any kind of error anyway.</li>
+									<li>In terms of performance you optimistically save a heap allocation vs putting an error trait object in a box, but pessimistically you could actually take a big performance hit.  A Rust <code>enum</code> is a lot like a C <code>union</code>.  It's size will be that of the largest type it could possibly contain.  If even one of the error types you could return is large then you might end up passing a very large <code>Result</code> sized to contain the worst-case-scenario error up the stack every time your function is called, whereas you might have gotten away with just a few extra bytes in the <code>Result</code> for storing a box.</li>
+								</ul>
+								<p>In summary, <code>enum Error</code> is an alternative to <code>dyn Error</code> for returning more than one possible error type from a function.  In theory it allows you to explicitly delineate which error types can be returned, and it avoids the heap allocation of a <code>BoxError</code>.  Practically it is difficult to implement and actually might come with performance penalties in certain situations.  Error enumerations might have niche applications in embedded code, but most of the time you should just use <code>BoxError</code>.</p>
+								<h3 id="conclusion">Conclusion</h3>
+								<p>Rust has a robust, flexible, and ergonomic framework for handling errors.  All programs can (and will) encounter errors, therefore error handling is ubiquitous.  You should know how to write code that models best practices for error handling.
+									<ul>
+										<li>Use the <a href="#result">question mark</a> <code>?</code> operator to propagate errors up the call stack.</li>
+										<li><a href="#dont_panic">Don't panic</a> with <code>unwrap()</code> or <code>expect()</code> except in rare cases when the error could only have arisen through a programming mistake and trying to recover from it risks data corruption.  When you <code>panic!()</code> your program's stack is <em>not</em> unwound, objects' <code><a href="https://doc.rust-lang.org/std/ops/trait.Drop.html">Drop</a></code> traits are not invoked, and consequently resources are <em>not</em> cleaned up.</li>
+										<li>When writing a function that can return <a href="#dyn_error">more than one type of error</a>, use <code><a href="https://github.com/rust-lang/rfcs/pull/2820">BoxError</a></code>, which is a boxed <code>dyn Error</code> trait object with <code>Send</code> and <code>Sync</code>.  Although <code>Send</code> and <code>Sync</code> are not strictly required by the <code>Error</code> trait, they are important to include for interoperability with multithreaded code.</li>
+										<li>When handling a <code>BoxError</code> you can always use its <code>Display</code> (or <code>Debug</code>) traits to <code>eprintln!("{}")</code> an error message.  For more sophisticated error handling use <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html#method.downcast_ref">Error::downcast_ref()</a></code> to <a href="#downcasting">downcast</a> to the underlying error type.</li>
+										<li>Writing <a href="#custom_errors">custom error types</a> is as easy as implementing the <code>Display</code> and <code>Debug</code> traits.  You can augment your custom error type with additional members and methods if you want to.  You can and should write custom error types to encapsulate implementation details of your library.</li>
+										<li><a href="#chaining">Chaining</a> errors is as easy as implementing the <code><a href="https://doc.rust-lang.org/std/error/trait.Error.html#method.source">Error::source()</a></code> method on your custom error type.  Chaining errors is a good way to wrap an underlying error with additional context before propagating it up the call stack.</li>
+										<li>Most of the time you should just use <code><a href="#dyn_error">BoxError</a></code> to return more than one type of error from a function.  However, there are niche applications where you might want to define a custom error type that is an <code><a href="#enum_error">enum</a></code> capable of containing multiple underlying error types.</li>
+									</ul>
+								</p>
+								<footer>
+									<!--
+									<ul class="actions">
+										<li><a href="https://github.com/benkay86/nom-tutorial" class="button large">Tutorial on GitHub</a></li>
+									</ul>
+									-->
+									<ul class="stats">
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Like: Rust Error Tutorial&body=Thanks!  Please tell me why you liked this post and consider giving my GitHib repository a star https://github.com/benkay86/nom-tutorial" class="icon solid fa-heart">0</a></li>
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Comment: Rust Error Tutorial&body=E-mail me your comment.  If it's appropriate and you're not a robot then I'll publish it on the blog." class="icon solid fa-comment">0</a></li>
+									</ul>
+								</footer>
+							</article>
+
+						<!-- Pagination -->
+							<ul class="disabled actions pagination">
+								<li><a href="fallible-iterators-in-rust.html" class="button large previous"><span class="icon solid fa-history"></span>&nbsp;Previous Post</a></li>
+								<li><a href="" class="disabled button large next">Next Post&nbsp;<span class="icon solid fa-arrow-circle-right"></span></a></li>
+							</ul>
+						
+					</div>
+
+				<!-- Footer -->
+					<section id="footer">
+						<ul class="icons">
+							<li><a href="https://benkay.net/" class="icon solid fa-globe"><span class="label">Homepage</span></a></li>
+							<li><a href="mailto:benkay.net" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+						</ul>
+						<p class="copyright">&copy; Benjamin Kay. Design: <a href="http://html5up.net">HTML5 UP</a>.</p>
+					</section>
+
+			</section>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

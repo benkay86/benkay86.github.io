@@ -325,7 +325,7 @@ fn main() -&gt; Result&lt;(), BoxError&gt; {
 			Err(e)
 		}
 	}
-}</code></pre>The code <code>e.downcast_ref::&lt;std::io::Error&gt;()</code> returns an <code>Option&lt;&amp;std::io::Error&gt;</code> that is <code>Some(&amp;std::io::Error)</code> if, at runtime, the error <code>e</code> is an I/O error, or <code>None</code> otherwise.  (By the way, the <code>::&lt;&gt;()</code> syntax is affectionately known in Rust as the <a href="https://github.com/jplatte/turbo.fish">turbofish</a>.)  Within the <code>if let Some(e)</code> block we can treat <code>e</code> as reference to whatever conrete error type we attempted to downcast it to.  In the final <code>else</code> statement we handle the case where we failed to downcast <code>e</code> to anything and use the generic <code>Display</code> and <code>Debug</code> traits implemented for all <code>Error</code> traits to print out as much information as we can.</p>
+}</code></pre>The code <code>e.downcast_ref::&lt;std::io::Error&gt;()</code> returns an <code>Option&lt;&amp;std::io::Error&gt;</code> that is <code>Some(&amp;std::io::Error)</code> if, at runtime, the error <code>e</code> is an I/O error, or <code>None</code> otherwise.  (By the way, the <code>::&lt;&gt;()</code> syntax is affectionately known in Rust as the <a href="https://github.com/jplatte/turbo.fish">turbofish</a>.)  Within the <code>if let Some(e)</code> block we can treat <code>e</code> as reference to whatever concrete error type we attempted to downcast it to.  In the final <code>else</code> statement we handle the case where we failed to downcast <code>e</code> to anything and use the generic <code>Display</code> and <code>Debug</code> traits implemented for all <code>Error</code> traits to print out as much information as we can.</p>
 								<p>In summary, we can <code>match</code> on a <code>Result</code> to explicitly handle errors.  We can attempt to recover from the error or re-propagate it up the call stack.  Each type of error implements a different set of methods for getting more specific information about that error type.  When dealing with a function that could return more than one type of error at runtime through <code>BoxError</code> we can downcast to the underlying error types we would like to explicitly handle using, for example, <code>downcast_ref()</code>.  We can also <code>eprintln!("{}")</code> any <code>BoxError</code> without downcasting by using the <code>Display</code> and <code>Debug</code> traits implemented for all <code>Error</code> trait objects.  This combination of methodologies allows us to ergonomically dispatch and handle dynamically-typed errors at runtime in a way that is analagous to C++'s exceptions.</p>
 								<h3 id="custom_errors">Custom Errors</h3>
 								<p>Let's take the simple hello world example from the <a href="#result">the first section</a> and up the stakes a little bit:<pre><code>use std::io::Write; // needed for write!()
@@ -634,10 +634,12 @@ fn main() -&gt; Result&lt;(), SomeError&gt; {
 									</ul>
 									-->
 									<ul class="stats">
-										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Like: Rust Error Tutorial&body=Thanks!  Please tell me why you liked this post and consider giving my GitHib repository a star https://github.com/benkay86/nom-tutorial" class="icon solid fa-heart">0</a></li>
-										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Comment: Rust Error Tutorial&body=E-mail me your comment.  If it's appropriate and you're not a robot then I'll publish it on the blog." class="icon solid fa-comment">0</a></li>
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Like: Rust Error Tutorial&body=Thanks!  Please tell me why you liked this post and consider giving my GitHib repository a star https://github.com/benkay86/nom-tutorial" class="icon solid fa-heart">1</a></li>
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Comment: Rust Error Tutorial&body=E-mail me your comment.  If it's appropriate and you're not a robot then I'll publish it on the blog." class="icon solid fa-comment">1</a></li>
 									</ul>
 								</footer>
+								<h3>Comments</h3>
+								<blockquote>I wish I had read this six months ago, before I learned all this stuff myself the hard way! It's both concise and comprehensive!<br />One nit: in your downcasting example, you take it as a reference to whatever <strong>conrete</strong> error type the downcast was attempted to.<br />&mdash; <a href="https://users.rust-lang.org/t/rust-error-tutorial/36185/2">jhwgh1968</a></blockquote>
 							</article>
 
 						<!-- Pagination -->

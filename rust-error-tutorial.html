@@ -267,7 +267,7 @@ Good sir, I regret to inform you that I could not write to: /root/foo
 Indubitably, I did encounter an error of type PermissionDenied.
 The secret error code was numbered: 13
 Enter a path to a file:</pre>What fun!  More seriously, we could programmatically match on <code>ErrorKind</code> or the integer value of <code>raw_os_error()</code> to make our program react differently to specific input/output errors, for instance, handling a <code>PermissionDenied</code> error differently from a <code>WriteZero</code> error.</p>
-									<p>Let's get more advanced and tro to develop our counting example from the <a href="#dyn_error">dyn Error</a> section.<pre><code>pub type BoxError = std::boxed::Box&lt;dyn
+									<p>Let's get more advanced and try to develop our counting example from the <a href="#dyn_error">dyn Error</a> section.<pre><code>pub type BoxError = std::boxed::Box&lt;dyn
 	std::error::Error   // must implement Error to satisfy ?
 	+ std::marker::Send // needed for threads
 	+ std::marker::Sync // needed for threads
@@ -634,12 +634,13 @@ fn main() -&gt; Result&lt;(), SomeError&gt; {
 									</ul>
 									-->
 									<ul class="stats">
-										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Like: Rust Error Tutorial&body=Thanks!  Please tell me why you liked this post and consider giving my GitHib repository a star https://github.com/benkay86/nom-tutorial" class="icon solid fa-heart">1</a></li>
-										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Comment: Rust Error Tutorial&body=E-mail me your comment.  If it's appropriate and you're not a robot then I'll publish it on the blog." class="icon solid fa-comment">1</a></li>
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Like: Rust Error Tutorial&body=Thanks!  Please tell me why you liked this post and consider giving my GitHib repository a star https://github.com/benkay86/nom-tutorial" class="icon solid fa-heart">2</a></li>
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Comment: Rust Error Tutorial&body=E-mail me your comment.  If it's appropriate and you're not a robot then I'll publish it on the blog." class="icon solid fa-comment">2</a></li>
 									</ul>
 								</footer>
 								<h3>Comments</h3>
 								<blockquote>I wish I had read this six months ago, before I learned all this stuff myself the hard way! It's both concise and comprehensive!<br />One nit: in your downcasting example, you take it as a reference to whatever <strong>conrete</strong> error type the downcast was attempted to.<br />&mdash; <a href="https://users.rust-lang.org/t/rust-error-tutorial/36185/2">jhwgh1968</a></blockquote>
+								<blockquote>Great tutorial, thanks for sharing.<br />&mdash; <a href="https://users.rust-lang.org/t/rust-error-tutorial/36185/2">drmason13</a></blockquote>
 							</article>
 
 						<!-- Pagination -->

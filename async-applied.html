@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<!--
+	Future Imperfect by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Compiled Thoughts - Async Applied</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+		<link rel="manifest" href="site.webmanifest" />
+	</head>
+	<body class="single is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<h1><a href="index.html">Compiled Thoughts</a></h1>
+						<nav class="links">
+							<ul>
+								<li><a href="https://benkay.net/">benkay.net</a></li>
+							</ul>
+						</nav>
+						<nav class="main">
+							<ul>
+								<li class="search">
+									<a class="fa-search" href="#search">Search</a>
+									<form id="search" method="get" action="https://www.google.com/search" onsubmit="google_site_search(this)">
+										<input type="text" name="q" placeholder="Search" />
+									</form>
+								</li>
+								<li class="menu">
+									<a class="fa-bars" href="#menu">Menu</a>
+								</li>
+							</ul>
+						</nav>
+					</header>
+
+				<!-- Menu -->
+					<section id="menu">
+
+						<!-- Search -->
+							<section>
+								<form class="search" method="get" action="https://www.google.com/search" onsubmit="google_site_search(this)">
+									<input type="text" name="q" placeholder="Search" />
+								</form>
+							</section>
+
+						<!-- Links -->
+							<section>
+								<ul class="links">
+									<li>
+										<a href="https://benkay.net/">
+											<h3>benkay.net</h3>
+											<p>Visit my personal website</p>
+										</a>
+									</li>
+									<li>
+										<a href="https://github.com/benkay86/">
+											<h3>GitHub</h3>
+											<p>Browse my GitHub repositories</p>
+										</a>
+									</li>
+								</ul>
+							</section>
+					</section>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<article class="post">
+								<header>
+									<div class="title">
+										<h2><a href="#">Async Applied</a></h2>
+										<p>Practical examples of the Rust async ecosystem</p>
+									</div>
+									<div class="meta">
+										<time class="published" datetime="2020-02-14">February 14, 2020</time>
+										<a href="https://benkay.net/" target="_blank" class="author"><span class="name">Benjamin Kay</span><img src="images/avatar.jpg" /></a>
+									</div>
+								</header>
+								<a href="images/full/tracks.jpg" class="image featured"><img src="images/high/tracks.jpg" alt="converging train tracks" /></a>
+								<p>Rust is a programming language with powerful asynchronous primitives.  <a href="https://github.com/benkay86/async-applied/">This repository</a> showcases some practical uses cases of Rusts's async ecosystem.</p>
+								<p>Rust is a general-purpose programming language that has always aimed to be good at concurrency.  We are one step closed to that goal with the <a href="https://blog.rust-lang.org/2019/11/07/Async-await-stable.html">recent stabilization of async/await</a>.  With that change has come flux within the async ecosystem as existing crates migrate to the new async/await syntax.  I have started a repository of async &quot;applied&quot; to demonstrate some practical uses of the async ecosystem, including <a href="https://github.com/benkay86/async-applied/tree/master/reqwest-tokio-compat">how to make futures and tokio play nice with each other</a>.  It is still very much a work in progress and in need of contributions of more examples, but go <a href="https://github.com/benkay86/async-applied">check out the code on GitHub</a>.  Also check out of the <a href="https://rust-lang.github.io/async-book/01_getting_started/01_chapter.html">excellent</a> <a href="https://book.async.rs/">tutorials on</a> <a href="https://tokio.rs/docs/getting-started/hello-world/">async/await</a>.  As always, please <a href="mailto:benjamin@benkay.net?subject=Async Applied">e-mail me</a> with comments, suggestions, or if you found the tutorial helpful!</p>
+								<footer>
+									<ul class="actions">
+										<li><a href="https://github.com/benkay86/async-applied" class="button large">Repository on GitHub</a></li>
+									</ul>
+									<ul class="stats">
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Like: Async Applied&body=Thanks!  Please tell me why you liked this post and consider giving my GitHub repository a star https://github.com/benkay86/async-applied" class="icon solid fa-heart">0</a></li>
+										<li><a href="mailto:Benjamin Kay <benjamin@benkay.net>?subject=Comment: Async Applied&body=E-mail me your comment.  If it's appropriate and you're not a robot then I'll publish it on the blog." class="icon solid fa-comment">0</a></li>
+									</ul>
+								</footer>
+							</article>
+
+						<!-- Pagination -->
+							<ul class="disabled actions pagination">
+								<li><a href="rust-error-tutorial.html" class="button large previous"><span class="icon solid fa-history"></span>&nbsp;Previous Post</a></li>
+								<li><a href="" class="disabled button large next">Next Post&nbsp;<span class="icon solid fa-arrow-circle-right"></span></a></li>
+							</ul>
+						
+					</div>
+
+				<!-- Footer -->
+					<section id="footer">
+						<ul class="icons">
+							<li><a href="https://benkay.net/" class="icon solid fa-globe"><span class="label">Homepage</span></a></li>
+							<li><a href="mailto:benkay.net" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+						</ul>
+						<p class="copyright">&copy; Benjamin Kay. Design: <a href="http://html5up.net">HTML5 UP</a>.</p>
+					</section>
+
+			</section>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

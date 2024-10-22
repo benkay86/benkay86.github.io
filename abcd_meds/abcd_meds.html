@@ -17,6 +17,7 @@
         <label id="navtoggle" for="togglestate" class="pdoc-button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke-linecap='round' stroke="currentColor" stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg></label>
         <input id="togglestate" type="checkbox" aria-hidden="true" tabindex="-1">
         <div>
+            <img src="logo.png" class="logo" alt="project logo"/>
 
             <input type="search" placeholder="Search..." role="searchbox" aria-label="search"
                    pattern=".+" required>
@@ -53,6 +54,8 @@
 abcd_meds    </h1>
 
                         <div class="docstring"><p>Tabulate prescription medication information from the ABCD Study</p>
+
+<p>Homepage: <a href="https://github.com/benkay86/abcd_meds">https://github.com/benkay86/abcd_meds</a></p>
 
 <p>The Adolescent Brain Cognitive Development (ABCD) Study includes data on
 prescription and over-the-counter medication use for over 10,000 children at
@@ -425,308 +428,310 @@ baseline.</p>
 
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">&quot;&quot;&quot;Tabulate prescription medication information from the ABCD Study</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a>
-</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="sd">The Adolescent Brain Cognitive Development (ABCD) Study includes data on</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">prescription and over-the-counter medication use for over 10,000 children at</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="sd">five timepoints (study visits) and counting. This package provides tools to</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="sd">parse the data and generate tables, i.e. [Polars](https://polar.rs) data frames,</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="sd">indicating which participants took a medication of interest and when. For</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="sd">example:</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">```</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="sd">┌────────────────┬──────────────────────────┬───────┬────────┬─────────┐</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">│ src_subject_id ┆ eventname                ┆ med   ┆ med_24 ┆ med_ago │</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="sd">│ ---            ┆ ---                      ┆ ---   ┆ ---    ┆ ---     │</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="sd">│ str            ┆ str                      ┆ bool  ┆ bool   ┆ f32     │</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="sd">╞════════════════╪══════════════════════════╪═══════╪════════╪═════════╡</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="sd">│ AAAA1111       ┆ baseline_year_1_arm_1    ┆ true  ┆ false  ┆ null    │</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">│ AAAA1111       ┆ 1_year_follow_up_y_arm_1 ┆ true  ┆ true   ┆ 2.5     │</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">│ AAAA1111       ┆ 2_year_follow_up_y_arm_1 ┆ true  ┆ true   ┆ 2.0     │</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="sd">│ …              ┆ …                        ┆ …     ┆ …      ┆ …       │</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">│ BBBB2222       ┆ baseline_year_1_arm_1    ┆ false ┆ false  ┆ null    │</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="sd">└────────────────┴──────────────────────────┴───────┴────────┴─────────┘</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">```</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a>
-</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="sd">The columns are:</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a><span class="sd">- `src_subject_id`: The unique 8-character portion of the participant&#39;s id, e.g.</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a><span class="sd">   NDAR_INVAAAA1111 --&gt; AAAA1111. Note that rows in the data frame may have the</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a><span class="sd">   same participant id but different eventnames.</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">- `eventname`: Timepoint or visit within the longitudinal study, see the</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">  `abcd_meds.event.Event` enum.</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">- `med`: `true` if the participant is taking one of the target medications,</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">  `false` otherwise.</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">- `med_24`: `true` if the participant took the medication in the last 24 hours,</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="sd">Homepage: https://github.com/benkay86/abcd_meds</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="sd">The Adolescent Brain Cognitive Development (ABCD) Study includes data on</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="sd">prescription and over-the-counter medication use for over 10,000 children at</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="sd">five timepoints (study visits) and counting. This package provides tools to</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="sd">parse the data and generate tables, i.e. [Polars](https://polar.rs) data frames,</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="sd">indicating which participants took a medication of interest and when. For</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">example:</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">```</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="sd">┌────────────────┬──────────────────────────┬───────┬────────┬─────────┐</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="sd">│ src_subject_id ┆ eventname                ┆ med   ┆ med_24 ┆ med_ago │</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="sd">│ ---            ┆ ---                      ┆ ---   ┆ ---    ┆ ---     │</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="sd">│ str            ┆ str                      ┆ bool  ┆ bool   ┆ f32     │</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">╞════════════════╪══════════════════════════╪═══════╪════════╪═════════╡</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">│ AAAA1111       ┆ baseline_year_1_arm_1    ┆ true  ┆ false  ┆ null    │</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="sd">│ AAAA1111       ┆ 1_year_follow_up_y_arm_1 ┆ true  ┆ true   ┆ 2.5     │</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">│ AAAA1111       ┆ 2_year_follow_up_y_arm_1 ┆ true  ┆ true   ┆ 2.0     │</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="sd">│ …              ┆ …                        ┆ …     ┆ …      ┆ …       │</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">│ BBBB2222       ┆ baseline_year_1_arm_1    ┆ false ┆ false  ┆ null    │</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">└────────────────┴──────────────────────────┴───────┴────────┴─────────┘</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="sd">```</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a>
+</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a><span class="sd">The columns are:</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a><span class="sd">- `src_subject_id`: The unique 8-character portion of the participant&#39;s id, e.g.</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">   NDAR_INVAAAA1111 --&gt; AAAA1111. Note that rows in the data frame may have the</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">   same participant id but different eventnames.</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">- `eventname`: Timepoint or visit within the longitudinal study, see the</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">  `abcd_meds.event.Event` enum.</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">- `med`: `true` if the participant is taking one of the target medications,</span>
 </span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">  `false` otherwise.</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">- `med_ago`: How many hours ago the participant took the medication or `null` if</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="sd">  the participant last took the medication more than 24 hours ago. May be a</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="sd">  decimal number, e.g. 2.5 --&gt; 90 minutes ago.</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>
-</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">You can use this package as a command-line tool or as a library to write your</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">own Python code.</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">## Citation</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">- `med_24`: `true` if the participant took the medication in the last 24 hours,</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="sd">  `false` otherwise.</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="sd">- `med_ago`: How many hours ago the participant took the medication or `null` if</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a><span class="sd">  the participant last took the medication more than 24 hours ago. May be a</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">  decimal number, e.g. 2.5 --&gt; 90 minutes ago.</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">You can use this package as a command-line tool or as a library to write your</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">own Python code.</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
-</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">The abcd_meds package is free to use, modify, and redistribute under the MIT or</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="sd">Apache open source licenses. If you use abcd_meds in an academic publication,</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">please support our work by citing our preprint:</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>
-</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">## Why is this package needed?</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">## Citation</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>
+</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">The abcd_meds package is free to use, modify, and redistribute under the MIT or</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">Apache open source licenses. If you use abcd_meds in an academic publication,</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">please support our work by citing our preprint:</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>
-</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="sd">The ABCD Tabulated Release Data include a file</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a><span class="sd">`core/physical-health/ph_p_meds.csv`. This file encodes medication use across 90</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">columns using unique identifiers from the</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a><span class="sd">[NIH RxNorm Database](https://www.nlm.nih.gov/research/umls/rxnorm/index.html)</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a><span class="sd">called rxcuis, e.g. 544393 is Motrin Children 100 mg in 5 mL Oral Suspension.</span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a><span class="sd">Typically you will not be interested in knowning which children took a specific</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="sd">formulation or brand of a drug (e.g. Advil vs Motrin). Instead, you would like</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="sd">to know who took any medication containing the active ingredient ibuprofen.</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="sd">This package automates the process of finding all the rxcuis related to an</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="sd">active ingredient and matching them against the ABCD tabulated csv file.</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">## Command line use</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="sd">## Why is this package needed?</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>
+</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">The ABCD Tabulated Release Data include a file</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a><span class="sd">`core/physical-health/ph_p_meds.csv`. This file encodes medication use across 90</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a><span class="sd">columns using unique identifiers from the</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a><span class="sd">[NIH RxNorm Database](https://www.nlm.nih.gov/research/umls/rxnorm/index.html)</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="sd">called rxcuis, e.g. 544393 is Motrin Children 100 mg in 5 mL Oral Suspension.</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="sd">Typically you will not be interested in knowning which children took a specific</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="sd">formulation or brand of a drug (e.g. Advil vs Motrin). Instead, you would like</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="sd">to know who took any medication containing the active ingredient ibuprofen.</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a><span class="sd">This package automates the process of finding all the rxcuis related to an</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">active ingredient and matching them against the ABCD tabulated csv file.</span>
 </span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>
-</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="sd">This package may be invoked from the command line without needing to write any</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">Python code. First you will need to install the package, for example:</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>
-</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">```bash</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">pip install abcd_meds</span>
-</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">```</span>
-</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>
-</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="sd">Command line usage is organized into subcommands.  Run </span>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="sd">`python -m abcd_meds --help` for a list of available subcommands.</span>
-</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="sd">```</span>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="sd">usage: abcd_meds [-h] {authenticate,download,make_table,rxnorm} ...</span>
-</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>
-</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">Tabulate prescription medication information from the ABCD Study</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="sd">## Command line use</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">This package may be invoked from the command line without needing to write any</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">Python code. First you will need to install the package, for example:</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>
+</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">```bash</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="sd">pip install abcd_meds</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="sd">```</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="sd">Command line usage is organized into subcommands.  Run </span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="sd">`python -m abcd_meds --help` for a list of available subcommands.</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="sd">```</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">usage: abcd_meds [-h] {authenticate,download,make_table,rxnorm} ...</span>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">options:</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="sd">  -h, --help            show this help message and exit</span>
-</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>
-</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a><span class="sd">commands:</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">  {authenticate,download,make_table,rxnorm}</span>
-</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="sd">    authenticate        Authenticate with NIMH Data Archive (NDA)</span>
-</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">    download            Download abcd-data-release-5.1.zip and extract ph_p_meds.csv</span>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">    make_table          Make a table of medication use</span>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">    rxnorm              Query RxNorm database</span>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">Example: python -m abcd_meds make_table --ingredient ibuprofen --output ibuprofen.csv</span>
-</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="sd">```</span>
-</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>
-</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">For additional help with subcommands, use `--help` on the subcommand. For</span>
-</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">example, `python -m abcd_meds make_table --help`.</span>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">-   authenticate</span>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="sd">    ```</span>
-</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">    usage: abcd_meds authenticate [-h]</span>
-</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="sd">    Opens a web browser and prompts for interactive NDA authentication.</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">Tabulate prescription medication information from the ABCD Study</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">options:</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a><span class="sd">  -h, --help            show this help message and exit</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="sd">commands:</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">  {authenticate,download,make_table,rxnorm}</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">    authenticate        Authenticate with NIMH Data Archive (NDA)</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">    download            Download abcd-data-release-5.1.zip and extract ph_p_meds.csv</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">    make_table          Make a table of medication use</span>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">    rxnorm              Query RxNorm database</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>
+</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">Example: python -m abcd_meds make_table --ingredient ibuprofen --output ibuprofen.csv</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">```</span>
+</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">For additional help with subcommands, use `--help` on the subcommand. For</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">example, `python -m abcd_meds make_table --help`.</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">-   authenticate</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="sd">    ```</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="sd">    usage: abcd_meds authenticate [-h]</span>
 </span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>
-</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="sd">    options:</span>
-</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a><span class="sd">    -h, --help  show this help message and exit</span>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="sd">    ```</span>
-</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a><span class="sd">-   download</span>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="sd">    Opens a web browser and prompts for interactive NDA authentication.</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="sd">    options:</span>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a><span class="sd">    -h, --help  show this help message and exit</span>
 </span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="sd">    ```</span>
-</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a><span class="sd">    usage: abcd_meds download [-h] [--url URL] [--filename FILENAME] [--extract-to EXTRACT_TO]</span>
-</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>
-</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a><span class="sd">    Download and extract ABCD tabulated medication data from the NDA.</span>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a><span class="sd">-   download</span>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a><span class="sd">    ```</span>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a><span class="sd">    usage: abcd_meds download [-h] [--url URL] [--filename FILENAME] [--extract-to EXTRACT_TO]</span>
 </span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>
-</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a><span class="sd">    options:</span>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a><span class="sd">    -h, --help            show this help message and exit</span>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="sd">    --url URL             What to download (default: https://nda.nih.gov/ftpDownload?id=yMg9WJ2NE8coDGYEtzwqLPc&amp;ownerId=k5ME5PUkEzKRDih8nuXmAio&amp;ownerName=study)</span>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="sd">    --filename FILENAME   Where to save downloaded file (default: abcd-data-release-5.1.zip)</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="sd">    --extract-to EXTRACT_TO</span>
-</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="sd">                            Where to extract meds file, set to empty string &quot;&quot; to skip extraction. (default: core/physical-health/ph_p_meds.csv)</span>
-</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a><span class="sd">    ```</span>
-</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="sd">-   make_table</span>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a><span class="sd">    Download and extract ABCD tabulated medication data from the NDA.</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="sd">    options:</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="sd">    -h, --help            show this help message and exit</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="sd">    --url URL             What to download (default: https://nda.nih.gov/ftpDownload?id=yMg9WJ2NE8coDGYEtzwqLPc&amp;ownerId=k5ME5PUkEzKRDih8nuXmAio&amp;ownerName=study)</span>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="sd">    --filename FILENAME   Where to save downloaded file (default: abcd-data-release-5.1.zip)</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a><span class="sd">    --extract-to EXTRACT_TO</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="sd">                            Where to extract meds file, set to empty string &quot;&quot; to skip extraction. (default: core/physical-health/ph_p_meds.csv)</span>
 </span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="sd">    ```</span>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="sd">    usage: abcd_meds make_table [-h] [-i CSV_FILE] -o OUTPUT [--prefix PREFIX] [--filter-events [FILTER_EVENTS ...]] (--ingredient INGREDIENT | --rxcuis RXCUIS [RXCUIS ...])</span>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="sd">    Makes a table with columns src_subject_id for the 8-character unique id, eventname for the event name (e.g. baseline_year_1_arm_1), med indicating if participant took a matching medication, med_24 indicating if medication was taken in the last 24 hours, and med_ago indicating how many hours ago the medication was taken (or null if more than 24 hours ago).</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="sd">-   make_table</span>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="sd">    ```</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="sd">    usage: abcd_meds make_table [-h] [-i CSV_FILE] -o OUTPUT [--prefix PREFIX] [--filter-events [FILTER_EVENTS ...]] (--ingredient INGREDIENT | --rxcuis RXCUIS [RXCUIS ...])</span>
 </span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">    options:</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">    -h, --help            show this help message and exit</span>
-</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">    -i CSV_FILE, --input CSV_FILE</span>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">                            Tabulated medication file (default: core/physical-health/ph_p_meds.csv)</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">    -o OUTPUT, --output OUTPUT</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">                            Output file, must end in .csv or .parquet (default: None)</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">    --prefix PREFIX       Column prefix, e.g. xxx --&gt; xxx, xxx_24, xxx_ago (default: med)</span>
-</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">    --filter-events [FILTER_EVENTS ...]</span>
-</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">                            Filter by list of events, e.g. baseline_year_1_arm_1 (default: None)</span>
-</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="sd">    --ingredient INGREDIENT</span>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="sd">                            Match all meds containing ingredient rxcui or name, e.g. ibuprofen (default: None)</span>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="sd">    --rxcuis RXCUIS [RXCUIS ...]</span>
-</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">                            Match any rxcui in list, e.g. 123 4567 8910 (default: None)</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="sd">    ```</span>
-</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">-   rxnorm</span>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">    Makes a table with columns src_subject_id for the 8-character unique id, eventname for the event name (e.g. baseline_year_1_arm_1), med indicating if participant took a matching medication, med_24 indicating if medication was taken in the last 24 hours, and med_ago indicating how many hours ago the medication was taken (or null if more than 24 hours ago).</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">    options:</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">    -h, --help            show this help message and exit</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">    -i CSV_FILE, --input CSV_FILE</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">                            Tabulated medication file (default: core/physical-health/ph_p_meds.csv)</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">    -o OUTPUT, --output OUTPUT</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">                            Output file, must end in .csv or .parquet (default: None)</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">    --prefix PREFIX       Column prefix, e.g. xxx --&gt; xxx, xxx_24, xxx_ago (default: med)</span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="sd">    --filter-events [FILTER_EVENTS ...]</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="sd">                            Filter by list of events, e.g. baseline_year_1_arm_1 (default: None)</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="sd">    --ingredient INGREDIENT</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">                            Match all meds containing ingredient rxcui or name, e.g. ibuprofen (default: None)</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="sd">    --rxcuis RXCUIS [RXCUIS ...]</span>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">                            Match any rxcui in list, e.g. 123 4567 8910 (default: None)</span>
 </span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">    ```</span>
-</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">    usage: abcd_meds rxnorm [-h] (--rxcui-from-name NAME | --ingredients name_or_rxcui | --related rxcui)</span>
-</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">    Query RxNorm database</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">-   rxnorm</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="sd">    ```</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">    usage: abcd_meds rxnorm [-h] (--rxcui-from-name NAME | --ingredients name_or_rxcui | --related rxcui)</span>
 </span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="sd">    options:</span>
-</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="sd">    -h, --help            show this help message and exit</span>
-</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="sd">    --rxcui-from-name NAME</span>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="sd">                            Retrieve rxcui for a medication name, e.g. Advil --&gt; 153010 (default: None)</span>
-</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a><span class="sd">    --ingredients name_or_rxcui</span>
-</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="sd">                            List ingredients of a medication, e.g. Augmentin --&gt; 48203 723 (default: None)</span>
-</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a><span class="sd">    --related rxcui       List all rxcuis related to an ingredient, e.g. (default: None)</span>
-</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a><span class="sd">    ```</span>
-</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>
-</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a><span class="sd">## Calling the library</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="sd">    Query RxNorm database</span>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="sd">    options:</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="sd">    -h, --help            show this help message and exit</span>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a><span class="sd">    --rxcui-from-name NAME</span>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="sd">                            Retrieve rxcui for a medication name, e.g. Advil --&gt; 153010 (default: None)</span>
+</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a><span class="sd">    --ingredients name_or_rxcui</span>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a><span class="sd">                            List ingredients of a medication, e.g. Augmentin --&gt; 48203 723 (default: None)</span>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a><span class="sd">    --related rxcui       List all rxcuis related to an ingredient, e.g. (default: None)</span>
+</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a><span class="sd">    ```</span>
 </span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>
-</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a><span class="sd">Important Classes and Methods</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a><span class="sd">- `abcd_meds.nda_downloader.download()`: Automatically fetch the ABCD tabulated data.</span>
-</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a><span class="sd">- `abcd_meds.rxnorm.rxcui_from_name()`: Look up the rxcui of a drug by name.</span>
-</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a><span class="sd">- `abcd_meds.rxnorm.ingredients()`: Look up rxcui(s) of a drugs active ingredient(s).</span>
-</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="sd">- `abcd_meds.rxnorm.related_rxcuis()`: Look up rxcui(s) of drugs containing an ingredient.</span>
-</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="sd">- `abcd_meds.medparser.make_table()`: Generate data frame for a list of target rxcuis.</span>
-</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="sd">- `abcd_meds.medparser.join()`: Join data frames for different drugs.</span>
-</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">- `abcd_meds.medparser.filter_events()`: Filter a data frame by timepoint/study visit.</span>
-</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="sd">- `abcd_meds.event.Event`: Enum for referencing timepoints/study visits within ABCD.</span>
-</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>
-</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a><span class="sd">The following series of examples illustrate typical use of the library. See the</span>
-</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a><span class="sd">documentation for individual modules, classes, and methods for greater detail.</span>
-</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>
-</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a><span class="sd">Look up the active ingredient of Tylenol. Note the use of `await` to perform</span>
-</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a><span class="sd">asynchronous operations. Refer to the</span>
-</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a><span class="sd">[Python Async IO Tutorial](https://realpython.com/async-io-python/) if you are</span>
-</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a><span class="sd">unfamiliar with async/await. In general, you will just need to use</span>
-</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="sd">[`asyncio.run()`](https://docs.python.org/3/library/asyncio-runner.html#asyncio.run).</span>
-</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a><span class="sd">Note that `abcd_meds.ingredients()` returns a list, as drugs may have more than</span>
-</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a><span class="sd">one active ingredient. Alternatively, look up the rxcui of acetaminophen.</span>
-</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a><span class="sd">Example:</span>
-</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a><span class="sd">    &gt;&gt;&gt; import abcd_meds</span>
-</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a><span class="sd">    &gt;&gt;&gt; rxcui = await abcd_meds.ingredients(&#39;Tylenol&#39;)</span>
-</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a><span class="sd">    [161]</span>
-</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a><span class="sd">    &gt;&gt;&gt; rxcui = await abcd_meds.rxcui_from_name(&#39;acetaminophen&#39;)</span>
-</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a><span class="sd">    &gt;&gt;&gt; rxcui</span>
-</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a><span class="sd">    161</span>
-</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a>
-</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="sd">Get a list of all the rxcuis of drugs containing acetaminophen. </span>
-</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="sd">Example:</span>
-</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="sd">    &gt;&gt;&gt; rxcui = await abcd_meds.rxcui_from_name(&#39;acetaminophen&#39;)</span>
-</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a><span class="sd">    &gt;&gt;&gt; rxcuis = await abcd_meds.related_rxcuis(rxcui)</span>
-</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a><span class="sd">    &gt;&gt;&gt; rxcuis</span>
-</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a><span class="sd">    [1013857, 1038776, ..., 2679416, 2679421]</span>
-</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="sd">    &gt;&gt;&gt; len(rxcuis) # Wow, there&#39;s a lot of drugs with acetaminophen!</span>
-</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a><span class="sd">    1693</span>
-</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>
-</span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a><span class="sd">Make a data frame indicating acetaminophen use. Note the use of</span>
-</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a><span class="sd">[`collect_async()`](https://docs.pola.rs/api/python/dev/reference/lazyframe/api/polars.LazyFrame.collect_async.html#polars.LazyFrame.collect_async)</span>
-</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a><span class="sd">to transform optimized, &quot;lazy&quot; operations into a concrete data frame. The</span>
-</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a><span class="sd">`src_subject_id` is the NDAR_INVABCD1234 identifier without the NDAR_INV prefix.</span>
-</span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a><span class="sd">See `abcd_meds.event.Event` for more information about `eventname`. The column</span>
-</span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a><span class="sd">`med` indicates who is taking the drugs, `med_24` who took it in the last 24</span>
-</span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a><span class="sd">hours, and `med_ago` how many hours ago (or `null` if more than 24 hours ago).</span>
-</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="sd">Example:</span>
-</span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a><span class="sd">    &gt;&gt;&gt; df = abcd_meds.make_table(rxcuis)</span>
-</span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a><span class="sd">    &gt;&gt;&gt; df = await df.collect_async()</span>
-</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a><span class="sd">    &gt;&gt;&gt; df</span>
-</span><span id="L-200"><a href="#L-200"><span class="linenos">200</span></a><span class="sd">    shape: (11_859, 5)</span>
-</span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a><span class="sd">    ┌────────────────┬──────────────────────────┬───────┬────────┬─────────┐</span>
-</span><span id="L-202"><a href="#L-202"><span class="linenos">202</span></a><span class="sd">    │ src_subject_id ┆ eventname                ┆ med   ┆ med_24 ┆ med_ago │</span>
-</span><span id="L-203"><a href="#L-203"><span class="linenos">203</span></a><span class="sd">    │ ---            ┆ ---                      ┆ ---   ┆ ---    ┆ ---     │</span>
-</span><span id="L-204"><a href="#L-204"><span class="linenos">204</span></a><span class="sd">    │ str            ┆ str                      ┆ bool  ┆ bool   ┆ f32     │</span>
-</span><span id="L-205"><a href="#L-205"><span class="linenos">205</span></a><span class="sd">    ╞════════════════╪══════════════════════════╪═══════╪════════╪═════════╡</span>
-</span><span id="L-206"><a href="#L-206"><span class="linenos">206</span></a><span class="sd">    │ AAAA1111       ┆ baseline_year_1_arm_1    ┆ true  ┆ false  ┆ null    │</span>
-</span><span id="L-207"><a href="#L-207"><span class="linenos">207</span></a><span class="sd">    │ AAAA1111       ┆ 1_year_follow_up_y_arm_1 ┆ true  ┆ true   ┆ 2.5     │</span>
-</span><span id="L-208"><a href="#L-208"><span class="linenos">208</span></a><span class="sd">    │ AAAA1111       ┆ 2_year_follow_up_y_arm_1 ┆ true  ┆ true   ┆ 2.0     │</span>
-</span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a><span class="sd">    │ …              ┆ …                        ┆ …     ┆ …      ┆ …       │</span>
-</span><span id="L-210"><a href="#L-210"><span class="linenos">210</span></a><span class="sd">    │ BBBB2222       ┆ baseline_year_1_arm_1    ┆ false ┆ false  ┆ null    │</span>
-</span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a><span class="sd">    └────────────────┴──────────────────────────┴───────┴────────┴─────────┘</span>
-</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a>
-</span><span id="L-213"><a href="#L-213"><span class="linenos">213</span></a><span class="sd">Load the data from a custom location and save the raw data frame for future</span>
-</span><span id="L-214"><a href="#L-214"><span class="linenos">214</span></a><span class="sd">re-use. Make a drug-specific data frame with a custom column prefix. Note the</span>
-</span><span id="L-215"><a href="#L-215"><span class="linenos">215</span></a><span class="sd">use of</span>
-</span><span id="L-216"><a href="#L-216"><span class="linenos">216</span></a><span class="sd">[`collect()`](https://docs.pola.rs/api/python/dev/reference/lazyframe/api/polars.LazyFrame.collect.html)</span>
-</span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a><span class="sd">to go from a lazy frame to a data frame synchronously.</span>
-</span><span id="L-218"><a href="#L-218"><span class="linenos">218</span></a><span class="sd">Example:</span>
-</span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a><span class="sd">    &gt;&gt;&gt; df = await abcd_meds.load_df(csv_file=&#39;core/physical-health/ph_p_meds.csv&#39;).collect_async()</span>
-</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a><span class="sd">    &gt;&gt;&gt; df_apap = abcd_meds.make_table(rxcuis, df=df, col_prefix=&#39;apap&#39;).collect()</span>
-</span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a><span class="sd">    &gt;&gt;&gt; df_apap</span>
-</span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a><span class="sd">    shape: (11_859, 5)</span>
-</span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a><span class="sd">    ┌────────────────┬──────────────────────────┬────────┬─────────┬──────────┐</span>
-</span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a><span class="sd">    │ src_subject_id ┆ eventname                ┆ apap   ┆ apap_24 ┆ apap_ago │</span>
-</span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a><span class="sd">    │ ---            ┆ ---                      ┆ ---    ┆ ---     ┆ ---      │</span>
-</span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a><span class="sd">    │ str            ┆ str                      ┆ bool   ┆ bool    ┆ f32      │</span>
-</span><span id="L-227"><a href="#L-227"><span class="linenos">227</span></a><span class="sd">    ╞════════════════╪══════════════════════════╪════════╪═════════╪══════════╡</span>
-</span><span id="L-228"><a href="#L-228"><span class="linenos">228</span></a><span class="sd">    │ AAAA1111       ┆ baseline_year_1_arm_1    ┆ true   ┆ false   ┆ null     │</span>
-</span><span id="L-229"><a href="#L-229"><span class="linenos">229</span></a><span class="sd">    │ AAAA1111       ┆ 1_year_follow_up_y_arm_1 ┆ true   ┆ true    ┆ 2.5      │</span>
-</span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a><span class="sd">    │ AAAA1111       ┆ 2_year_follow_up_y_arm_1 ┆ true   ┆ true    ┆ 2.0      │</span>
-</span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a><span class="sd">    │ …              ┆ …                        ┆ …      ┆ …       ┆ …        │</span>
-</span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a><span class="sd">    │ BBBB2222       ┆ baseline_year_1_arm_1    ┆ false  ┆ false   ┆ null     │</span>
-</span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a><span class="sd">    └────────────────┴──────────────────────────┴────────┴─────────┴──────────┘</span>
-</span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a>
-</span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a><span class="sd">Write the data frame to a file. Output in csv format will work with a wide</span>
-</span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a><span class="sd">variety of outside tools. Output in the</span>
-</span><span id="L-237"><a href="#L-237"><span class="linenos">237</span></a><span class="sd">[Apache Parquet](https://parquet.apache.org/) retains schema information (i.e.</span>
-</span><span id="L-238"><a href="#L-238"><span class="linenos">238</span></a><span class="sd">variable types) and can be compressed.</span>
-</span><span id="L-239"><a href="#L-239"><span class="linenos">239</span></a><span class="sd">Example:</span>
-</span><span id="L-240"><a href="#L-240"><span class="linenos">240</span></a><span class="sd">    &gt;&gt;&gt; df_apap.write_csv(&#39;apap.csv&#39;)</span>
-</span><span id="L-241"><a href="#L-241"><span class="linenos">241</span></a><span class="sd">    &gt;&gt;&gt; df_apap.write_parquet(&#39;apap.parquet&#39;)</span>
-</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a><span class="sd">    &gt;&gt;&gt; df_apap.write_parquet(&#39;apap.parquet&#39;, compression=&#39;zstd&#39;, compression_level=22)</span>
-</span><span id="L-243"><a href="#L-243"><span class="linenos">243</span></a>
-</span><span id="L-244"><a href="#L-244"><span class="linenos">244</span></a><span class="sd">Make another data frame for ibuprofen. Merge the two frames together.</span>
-</span><span id="L-245"><a href="#L-245"><span class="linenos">245</span></a><span class="sd">Example:</span>
-</span><span id="L-246"><a href="#L-246"><span class="linenos">246</span></a><span class="sd">    &gt;&gt;&gt; rxcui = await abcd_meds.rxcui_from_name(&#39;ibuprofen&#39;)</span>
-</span><span id="L-247"><a href="#L-247"><span class="linenos">247</span></a><span class="sd">    &gt;&gt;&gt; rxcuis = await abcd_meds.related_rxcuis(rxcui)</span>
-</span><span id="L-248"><a href="#L-248"><span class="linenos">248</span></a><span class="sd">    &gt;&gt;&gt; df_ibu = abcd_meds.make_table(rxcuis, df=df, col_prefix=&#39;ibu&#39;)</span>
-</span><span id="L-249"><a href="#L-249"><span class="linenos">249</span></a><span class="sd">    &gt;&gt;&gt; df_full = abcd_meds.join(df_apap, df_ibu).collect()</span>
-</span><span id="L-250"><a href="#L-250"><span class="linenos">250</span></a><span class="sd">    &gt;&gt;&gt; df_full</span>
-</span><span id="L-251"><a href="#L-251"><span class="linenos">251</span></a><span class="sd">    shape: (48_991, 8)</span>
-</span><span id="L-252"><a href="#L-252"><span class="linenos">252</span></a><span class="sd">    ┌────────────────┬──────────────────────────┬───────┬─────────┬──────────┬───────┬────────┬─────────┐</span>
-</span><span id="L-253"><a href="#L-253"><span class="linenos">253</span></a><span class="sd">    │ src_subject_id ┆ eventname                ┆ apap  ┆ apap_24 ┆ apap_ago ┆ ibu   ┆ ibu_24 ┆ ibu_ago │</span>
-</span><span id="L-254"><a href="#L-254"><span class="linenos">254</span></a><span class="sd">    │ ---            ┆ ---                      ┆ ---   ┆ ---     ┆ ---      ┆ ---   ┆ ---    ┆ ---     │</span>
-</span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a><span class="sd">    │ str            ┆ str                      ┆ bool  ┆ bool    ┆ f32      ┆ bool  ┆ bool   ┆ f32     │</span>
-</span><span id="L-256"><a href="#L-256"><span class="linenos">256</span></a><span class="sd">    ╞════════════════╪══════════════════════════╪═══════╪═════════╪══════════╪═══════╪════════╪═════════╡</span>
-</span><span id="L-257"><a href="#L-257"><span class="linenos">257</span></a><span class="sd">    │ AAAA1111       ┆ baseline_year_1_arm_1    ┆ true  ┆ false   ┆ null     ┆ false ┆ false  ┆ null    │</span>
-</span><span id="L-258"><a href="#L-258"><span class="linenos">258</span></a><span class="sd">    │ AAAA1111       ┆ 1_year_follow_up_y_arm_1 ┆ true  ┆ true    ┆ 2.5      ┆ true  ┆ true   ┆ 1.0     │</span>
-</span><span id="L-259"><a href="#L-259"><span class="linenos">259</span></a><span class="sd">    │ AAAA1111       ┆ 2_year_follow_up_y_arm_1 ┆ true  ┆ true    ┆ 2.0      ┆ false ┆ false  ┆ null    │</span>
-</span><span id="L-260"><a href="#L-260"><span class="linenos">260</span></a><span class="sd">    │ …              ┆ …                        ┆ …     ┆ …       ┆ …        ┆ …     ┆ …      ┆ …       │</span>
-</span><span id="L-261"><a href="#L-261"><span class="linenos">261</span></a><span class="sd">    │ BBBB2222       ┆ baseline_year_1_arm_1    ┆ false ┆ false   ┆ null     ┆ true  ┆ false  ┆ null    │</span>
-</span><span id="L-262"><a href="#L-262"><span class="linenos">262</span></a><span class="sd">    └────────────────┴──────────────────────────┴───────┴─────────┴──────────┴───────┴────────┴─────────┘</span>
-</span><span id="L-263"><a href="#L-263"><span class="linenos">263</span></a>
-</span><span id="L-264"><a href="#L-264"><span class="linenos">264</span></a><span class="sd">Filter the data frame. Keep only the baseline event.</span>
-</span><span id="L-265"><a href="#L-265"><span class="linenos">265</span></a><span class="sd">Example:</span>
-</span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a><span class="sd">    &gt;&gt;&gt; df_full_baseline = abcd_meds.filter_events(df_full, &#39;baseline_year_1_arm_1&#39;).collect()</span>
-</span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a><span class="sd">    &gt;&gt;&gt; df_full_baseline</span>
-</span><span id="L-268"><a href="#L-268"><span class="linenos">268</span></a><span class="sd">    shape: (11_859, 8)</span>
-</span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a><span class="sd">    ┌────────────────┬──────────────────────────┬───────┬─────────┬──────────┬───────┬────────┬─────────┐</span>
-</span><span id="L-270"><a href="#L-270"><span class="linenos">270</span></a><span class="sd">    │ src_subject_id ┆ eventname                ┆ apap  ┆ apap_24 ┆ apap_ago ┆ ibu   ┆ ibu_24 ┆ ibu_ago │</span>
-</span><span id="L-271"><a href="#L-271"><span class="linenos">271</span></a><span class="sd">    │ ---            ┆ ---                      ┆ ---   ┆ ---     ┆ ---      ┆ ---   ┆ ---    ┆ ---     │</span>
-</span><span id="L-272"><a href="#L-272"><span class="linenos">272</span></a><span class="sd">    │ str            ┆ str                      ┆ bool  ┆ bool    ┆ f32      ┆ bool  ┆ bool   ┆ f32     │</span>
-</span><span id="L-273"><a href="#L-273"><span class="linenos">273</span></a><span class="sd">    ╞════════════════╪══════════════════════════╪═══════╪═════════╪══════════╪═══════╪════════╪═════════╡</span>
-</span><span id="L-274"><a href="#L-274"><span class="linenos">274</span></a><span class="sd">    │ AAAA1111       ┆ baseline_year_1_arm_1    ┆ true  ┆ false   ┆ null     ┆ false ┆ false  ┆ null    │</span>
-</span><span id="L-275"><a href="#L-275"><span class="linenos">275</span></a><span class="sd">    │ …              ┆ …                        ┆ …     ┆ …       ┆ …        ┆ …     ┆ …      ┆ …       │</span>
-</span><span id="L-276"><a href="#L-276"><span class="linenos">276</span></a><span class="sd">    │ BBBB2222       ┆ baseline_year_1_arm_1    ┆ false ┆ false   ┆ null     ┆ true  ┆ false  ┆ null    │</span>
-</span><span id="L-277"><a href="#L-277"><span class="linenos">277</span></a><span class="sd">    └────────────────┴──────────────────────────┴───────┴─────────┴──────────┴───────┴────────┴─────────┘</span>
-</span><span id="L-278"><a href="#L-278"><span class="linenos">278</span></a>
-</span><span id="L-279"><a href="#L-279"><span class="linenos">279</span></a><span class="sd">Count the number of participants taking both acetamimophen and ibuprofen at</span>
-</span><span id="L-280"><a href="#L-280"><span class="linenos">280</span></a><span class="sd">baseline.</span>
-</span><span id="L-281"><a href="#L-281"><span class="linenos">281</span></a><span class="sd">Example:</span>
-</span><span id="L-282"><a href="#L-282"><span class="linenos">282</span></a><span class="sd">    &gt;&gt;&gt; count = df_full_baseline.filter((polars.col(&#39;apap&#39;) == True) &amp; (polars.col(&#39;ibu&#39;) == True)).select(polars.count()).item()</span>
-</span><span id="L-283"><a href="#L-283"><span class="linenos">283</span></a><span class="sd">    &gt;&gt;&gt; count</span>
-</span><span id="L-284"><a href="#L-284"><span class="linenos">284</span></a><span class="sd">    53</span>
-</span><span id="L-285"><a href="#L-285"><span class="linenos">285</span></a>
-</span><span id="L-286"><a href="#L-286"><span class="linenos">286</span></a><span class="sd">Get a list of the participants taking both acetaminophen and ibuprofen at</span>
-</span><span id="L-287"><a href="#L-287"><span class="linenos">287</span></a><span class="sd">baseline.</span>
-</span><span id="L-288"><a href="#L-288"><span class="linenos">288</span></a><span class="sd">Example:</span>
-</span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a><span class="sd">    &gt;&gt;&gt; ids = df_full_baseline.filter((polars.col(&#39;apap&#39;) == True) &amp; (polars.col(&#39;ibu&#39;) == True))</span>
-</span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a><span class="sd">    ...     get_column(&#39;src_subject_id&#39;)</span>
-</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a><span class="sd">    ...     .to_list()</span>
-</span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a><span class="sd">    &gt;&gt;&gt; ids</span>
-</span><span id="L-293"><a href="#L-293"><span class="linenos">293</span></a><span class="sd">    [CCCC3333, ..., XXXX9999]</span>
-</span><span id="L-294"><a href="#L-294"><span class="linenos">294</span></a><span class="sd">    &gt;&gt;&gt; len(ids)</span>
-</span><span id="L-295"><a href="#L-295"><span class="linenos">295</span></a><span class="sd">    53</span>
-</span><span id="L-296"><a href="#L-296"><span class="linenos">296</span></a><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-297"><a href="#L-297"><span class="linenos">297</span></a>
-</span><span id="L-298"><a href="#L-298"><span class="linenos">298</span></a><span class="kn">from</span> <span class="nn">.event</span> <span class="kn">import</span> <span class="n">Event</span>
-</span><span id="L-299"><a href="#L-299"><span class="linenos">299</span></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">medparser</span>
-</span><span id="L-300"><a href="#L-300"><span class="linenos">300</span></a><span class="kn">from</span> <span class="nn">.medparser</span> <span class="kn">import</span> <span class="n">load_df</span><span class="p">,</span> <span class="n">make_table</span><span class="p">,</span> <span class="n">filter_events</span><span class="p">,</span> <span class="n">join</span>
-</span><span id="L-301"><a href="#L-301"><span class="linenos">301</span></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">nda_downloader</span>
-</span><span id="L-302"><a href="#L-302"><span class="linenos">302</span></a><span class="kn">from</span> <span class="nn">.nda_downloader</span> <span class="kn">import</span> <span class="n">NdaDownloader</span><span class="p">,</span> <span class="n">download</span>
-</span><span id="L-303"><a href="#L-303"><span class="linenos">303</span></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">rxnorm</span>
-</span><span id="L-304"><a href="#L-304"><span class="linenos">304</span></a><span class="kn">from</span> <span class="nn">.rxnorm</span> <span class="kn">import</span> <span class="n">rxcui_from_name</span><span class="p">,</span> <span class="n">ingredients</span><span class="p">,</span> <span class="n">related_rxcuis</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a><span class="sd">## Calling the library</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>
+</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a><span class="sd">Important Classes and Methods</span>
+</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a><span class="sd">- `abcd_meds.nda_downloader.download()`: Automatically fetch the ABCD tabulated data.</span>
+</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="sd">- `abcd_meds.rxnorm.rxcui_from_name()`: Look up the rxcui of a drug by name.</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="sd">- `abcd_meds.rxnorm.ingredients()`: Look up rxcui(s) of a drugs active ingredient(s).</span>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="sd">- `abcd_meds.rxnorm.related_rxcuis()`: Look up rxcui(s) of drugs containing an ingredient.</span>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">- `abcd_meds.medparser.make_table()`: Generate data frame for a list of target rxcuis.</span>
+</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="sd">- `abcd_meds.medparser.join()`: Join data frames for different drugs.</span>
+</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a><span class="sd">- `abcd_meds.medparser.filter_events()`: Filter a data frame by timepoint/study visit.</span>
+</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a><span class="sd">- `abcd_meds.event.Event`: Enum for referencing timepoints/study visits within ABCD.</span>
+</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>
+</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a><span class="sd">The following series of examples illustrate typical use of the library. See the</span>
+</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a><span class="sd">documentation for individual modules, classes, and methods for greater detail.</span>
+</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>
+</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a><span class="sd">Look up the active ingredient of Tylenol. Note the use of `await` to perform</span>
+</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a><span class="sd">asynchronous operations. Refer to the</span>
+</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="sd">[Python Async IO Tutorial](https://realpython.com/async-io-python/) if you are</span>
+</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a><span class="sd">unfamiliar with async/await. In general, you will just need to use</span>
+</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a><span class="sd">[`asyncio.run()`](https://docs.python.org/3/library/asyncio-runner.html#asyncio.run).</span>
+</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a><span class="sd">Note that `abcd_meds.ingredients()` returns a list, as drugs may have more than</span>
+</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a><span class="sd">one active ingredient. Alternatively, look up the rxcui of acetaminophen.</span>
+</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a><span class="sd">Example:</span>
+</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a><span class="sd">    &gt;&gt;&gt; import abcd_meds</span>
+</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a><span class="sd">    &gt;&gt;&gt; rxcui = await abcd_meds.ingredients(&#39;Tylenol&#39;)</span>
+</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a><span class="sd">    [161]</span>
+</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a><span class="sd">    &gt;&gt;&gt; rxcui = await abcd_meds.rxcui_from_name(&#39;acetaminophen&#39;)</span>
+</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a><span class="sd">    &gt;&gt;&gt; rxcui</span>
+</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="sd">    161</span>
+</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a>
+</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="sd">Get a list of all the rxcuis of drugs containing acetaminophen. </span>
+</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a><span class="sd">Example:</span>
+</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a><span class="sd">    &gt;&gt;&gt; rxcui = await abcd_meds.rxcui_from_name(&#39;acetaminophen&#39;)</span>
+</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a><span class="sd">    &gt;&gt;&gt; rxcuis = await abcd_meds.related_rxcuis(rxcui)</span>
+</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="sd">    &gt;&gt;&gt; rxcuis</span>
+</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a><span class="sd">    [1013857, 1038776, ..., 2679416, 2679421]</span>
+</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a><span class="sd">    &gt;&gt;&gt; len(rxcuis) # Wow, there&#39;s a lot of drugs with acetaminophen!</span>
+</span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a><span class="sd">    1693</span>
+</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a>
+</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a><span class="sd">Make a data frame indicating acetaminophen use. Note the use of</span>
+</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a><span class="sd">[`collect_async()`](https://docs.pola.rs/api/python/dev/reference/lazyframe/api/polars.LazyFrame.collect_async.html#polars.LazyFrame.collect_async)</span>
+</span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a><span class="sd">to transform optimized, &quot;lazy&quot; operations into a concrete data frame. The</span>
+</span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a><span class="sd">`src_subject_id` is the NDAR_INVABCD1234 identifier without the NDAR_INV prefix.</span>
+</span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a><span class="sd">See `abcd_meds.event.Event` for more information about `eventname`. The column</span>
+</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="sd">`med` indicates who is taking the drugs, `med_24` who took it in the last 24</span>
+</span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a><span class="sd">hours, and `med_ago` how many hours ago (or `null` if more than 24 hours ago).</span>
+</span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a><span class="sd">Example:</span>
+</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a><span class="sd">    &gt;&gt;&gt; df = abcd_meds.make_table(rxcuis)</span>
+</span><span id="L-200"><a href="#L-200"><span class="linenos">200</span></a><span class="sd">    &gt;&gt;&gt; df = await df.collect_async()</span>
+</span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a><span class="sd">    &gt;&gt;&gt; df</span>
+</span><span id="L-202"><a href="#L-202"><span class="linenos">202</span></a><span class="sd">    shape: (11_859, 5)</span>
+</span><span id="L-203"><a href="#L-203"><span class="linenos">203</span></a><span class="sd">    ┌────────────────┬──────────────────────────┬───────┬────────┬─────────┐</span>
+</span><span id="L-204"><a href="#L-204"><span class="linenos">204</span></a><span class="sd">    │ src_subject_id ┆ eventname                ┆ med   ┆ med_24 ┆ med_ago │</span>
+</span><span id="L-205"><a href="#L-205"><span class="linenos">205</span></a><span class="sd">    │ ---            ┆ ---                      ┆ ---   ┆ ---    ┆ ---     │</span>
+</span><span id="L-206"><a href="#L-206"><span class="linenos">206</span></a><span class="sd">    │ str            ┆ str                      ┆ bool  ┆ bool   ┆ f32     │</span>
+</span><span id="L-207"><a href="#L-207"><span class="linenos">207</span></a><span class="sd">    ╞════════════════╪══════════════════════════╪═══════╪════════╪═════════╡</span>
+</span><span id="L-208"><a href="#L-208"><span class="linenos">208</span></a><span class="sd">    │ AAAA1111       ┆ baseline_year_1_arm_1    ┆ true  ┆ false  ┆ null    │</span>
+</span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a><span class="sd">    │ AAAA1111       ┆ 1_year_follow_up_y_arm_1 ┆ true  ┆ true   ┆ 2.5     │</span>
+</span><span id="L-210"><a href="#L-210"><span class="linenos">210</span></a><span class="sd">    │ AAAA1111       ┆ 2_year_follow_up_y_arm_1 ┆ true  ┆ true   ┆ 2.0     │</span>
+</span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a><span class="sd">    │ …              ┆ …                        ┆ …     ┆ …      ┆ …       │</span>
+</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a><span class="sd">    │ BBBB2222       ┆ baseline_year_1_arm_1    ┆ false ┆ false  ┆ null    │</span>
+</span><span id="L-213"><a href="#L-213"><span class="linenos">213</span></a><span class="sd">    └────────────────┴──────────────────────────┴───────┴────────┴─────────┘</span>
+</span><span id="L-214"><a href="#L-214"><span class="linenos">214</span></a>
+</span><span id="L-215"><a href="#L-215"><span class="linenos">215</span></a><span class="sd">Load the data from a custom location and save the raw data frame for future</span>
+</span><span id="L-216"><a href="#L-216"><span class="linenos">216</span></a><span class="sd">re-use. Make a drug-specific data frame with a custom column prefix. Note the</span>
+</span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a><span class="sd">use of</span>
+</span><span id="L-218"><a href="#L-218"><span class="linenos">218</span></a><span class="sd">[`collect()`](https://docs.pola.rs/api/python/dev/reference/lazyframe/api/polars.LazyFrame.collect.html)</span>
+</span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a><span class="sd">to go from a lazy frame to a data frame synchronously.</span>
+</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a><span class="sd">Example:</span>
+</span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a><span class="sd">    &gt;&gt;&gt; df = await abcd_meds.load_df(csv_file=&#39;core/physical-health/ph_p_meds.csv&#39;).collect_async()</span>
+</span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a><span class="sd">    &gt;&gt;&gt; df_apap = abcd_meds.make_table(rxcuis, df=df, col_prefix=&#39;apap&#39;).collect()</span>
+</span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a><span class="sd">    &gt;&gt;&gt; df_apap</span>
+</span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a><span class="sd">    shape: (11_859, 5)</span>
+</span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a><span class="sd">    ┌────────────────┬──────────────────────────┬────────┬─────────┬──────────┐</span>
+</span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a><span class="sd">    │ src_subject_id ┆ eventname                ┆ apap   ┆ apap_24 ┆ apap_ago │</span>
+</span><span id="L-227"><a href="#L-227"><span class="linenos">227</span></a><span class="sd">    │ ---            ┆ ---                      ┆ ---    ┆ ---     ┆ ---      │</span>
+</span><span id="L-228"><a href="#L-228"><span class="linenos">228</span></a><span class="sd">    │ str            ┆ str                      ┆ bool   ┆ bool    ┆ f32      │</span>
+</span><span id="L-229"><a href="#L-229"><span class="linenos">229</span></a><span class="sd">    ╞════════════════╪══════════════════════════╪════════╪═════════╪══════════╡</span>
+</span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a><span class="sd">    │ AAAA1111       ┆ baseline_year_1_arm_1    ┆ true   ┆ false   ┆ null     │</span>
+</span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a><span class="sd">    │ AAAA1111       ┆ 1_year_follow_up_y_arm_1 ┆ true   ┆ true    ┆ 2.5      │</span>
+</span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a><span class="sd">    │ AAAA1111       ┆ 2_year_follow_up_y_arm_1 ┆ true   ┆ true    ┆ 2.0      │</span>
+</span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a><span class="sd">    │ …              ┆ …                        ┆ …      ┆ …       ┆ …        │</span>
+</span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a><span class="sd">    │ BBBB2222       ┆ baseline_year_1_arm_1    ┆ false  ┆ false   ┆ null     │</span>
+</span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a><span class="sd">    └────────────────┴──────────────────────────┴────────┴─────────┴──────────┘</span>
+</span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a>
+</span><span id="L-237"><a href="#L-237"><span class="linenos">237</span></a><span class="sd">Write the data frame to a file. Output in csv format will work with a wide</span>
+</span><span id="L-238"><a href="#L-238"><span class="linenos">238</span></a><span class="sd">variety of outside tools. Output in the</span>
+</span><span id="L-239"><a href="#L-239"><span class="linenos">239</span></a><span class="sd">[Apache Parquet](https://parquet.apache.org/) retains schema information (i.e.</span>
+</span><span id="L-240"><a href="#L-240"><span class="linenos">240</span></a><span class="sd">variable types) and can be compressed.</span>
+</span><span id="L-241"><a href="#L-241"><span class="linenos">241</span></a><span class="sd">Example:</span>
+</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a><span class="sd">    &gt;&gt;&gt; df_apap.write_csv(&#39;apap.csv&#39;)</span>
+</span><span id="L-243"><a href="#L-243"><span class="linenos">243</span></a><span class="sd">    &gt;&gt;&gt; df_apap.write_parquet(&#39;apap.parquet&#39;)</span>
+</span><span id="L-244"><a href="#L-244"><span class="linenos">244</span></a><span class="sd">    &gt;&gt;&gt; df_apap.write_parquet(&#39;apap.parquet&#39;, compression=&#39;zstd&#39;, compression_level=22)</span>
+</span><span id="L-245"><a href="#L-245"><span class="linenos">245</span></a>
+</span><span id="L-246"><a href="#L-246"><span class="linenos">246</span></a><span class="sd">Make another data frame for ibuprofen. Merge the two frames together.</span>
+</span><span id="L-247"><a href="#L-247"><span class="linenos">247</span></a><span class="sd">Example:</span>
+</span><span id="L-248"><a href="#L-248"><span class="linenos">248</span></a><span class="sd">    &gt;&gt;&gt; rxcui = await abcd_meds.rxcui_from_name(&#39;ibuprofen&#39;)</span>
+</span><span id="L-249"><a href="#L-249"><span class="linenos">249</span></a><span class="sd">    &gt;&gt;&gt; rxcuis = await abcd_meds.related_rxcuis(rxcui)</span>
+</span><span id="L-250"><a href="#L-250"><span class="linenos">250</span></a><span class="sd">    &gt;&gt;&gt; df_ibu = abcd_meds.make_table(rxcuis, df=df, col_prefix=&#39;ibu&#39;)</span>
+</span><span id="L-251"><a href="#L-251"><span class="linenos">251</span></a><span class="sd">    &gt;&gt;&gt; df_full = abcd_meds.join(df_apap, df_ibu).collect()</span>
+</span><span id="L-252"><a href="#L-252"><span class="linenos">252</span></a><span class="sd">    &gt;&gt;&gt; df_full</span>
+</span><span id="L-253"><a href="#L-253"><span class="linenos">253</span></a><span class="sd">    shape: (48_991, 8)</span>
+</span><span id="L-254"><a href="#L-254"><span class="linenos">254</span></a><span class="sd">    ┌────────────────┬──────────────────────────┬───────┬─────────┬──────────┬───────┬────────┬─────────┐</span>
+</span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a><span class="sd">    │ src_subject_id ┆ eventname                ┆ apap  ┆ apap_24 ┆ apap_ago ┆ ibu   ┆ ibu_24 ┆ ibu_ago │</span>
+</span><span id="L-256"><a href="#L-256"><span class="linenos">256</span></a><span class="sd">    │ ---            ┆ ---                      ┆ ---   ┆ ---     ┆ ---      ┆ ---   ┆ ---    ┆ ---     │</span>
+</span><span id="L-257"><a href="#L-257"><span class="linenos">257</span></a><span class="sd">    │ str            ┆ str                      ┆ bool  ┆ bool    ┆ f32      ┆ bool  ┆ bool   ┆ f32     │</span>
+</span><span id="L-258"><a href="#L-258"><span class="linenos">258</span></a><span class="sd">    ╞════════════════╪══════════════════════════╪═══════╪═════════╪══════════╪═══════╪════════╪═════════╡</span>
+</span><span id="L-259"><a href="#L-259"><span class="linenos">259</span></a><span class="sd">    │ AAAA1111       ┆ baseline_year_1_arm_1    ┆ true  ┆ false   ┆ null     ┆ false ┆ false  ┆ null    │</span>
+</span><span id="L-260"><a href="#L-260"><span class="linenos">260</span></a><span class="sd">    │ AAAA1111       ┆ 1_year_follow_up_y_arm_1 ┆ true  ┆ true    ┆ 2.5      ┆ true  ┆ true   ┆ 1.0     │</span>
+</span><span id="L-261"><a href="#L-261"><span class="linenos">261</span></a><span class="sd">    │ AAAA1111       ┆ 2_year_follow_up_y_arm_1 ┆ true  ┆ true    ┆ 2.0      ┆ false ┆ false  ┆ null    │</span>
+</span><span id="L-262"><a href="#L-262"><span class="linenos">262</span></a><span class="sd">    │ …              ┆ …                        ┆ …     ┆ …       ┆ …        ┆ …     ┆ …      ┆ …       │</span>
+</span><span id="L-263"><a href="#L-263"><span class="linenos">263</span></a><span class="sd">    │ BBBB2222       ┆ baseline_year_1_arm_1    ┆ false ┆ false   ┆ null     ┆ true  ┆ false  ┆ null    │</span>
+</span><span id="L-264"><a href="#L-264"><span class="linenos">264</span></a><span class="sd">    └────────────────┴──────────────────────────┴───────┴─────────┴──────────┴───────┴────────┴─────────┘</span>
+</span><span id="L-265"><a href="#L-265"><span class="linenos">265</span></a>
+</span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a><span class="sd">Filter the data frame. Keep only the baseline event.</span>
+</span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a><span class="sd">Example:</span>
+</span><span id="L-268"><a href="#L-268"><span class="linenos">268</span></a><span class="sd">    &gt;&gt;&gt; df_full_baseline = abcd_meds.filter_events(df_full, &#39;baseline_year_1_arm_1&#39;).collect()</span>
+</span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a><span class="sd">    &gt;&gt;&gt; df_full_baseline</span>
+</span><span id="L-270"><a href="#L-270"><span class="linenos">270</span></a><span class="sd">    shape: (11_859, 8)</span>
+</span><span id="L-271"><a href="#L-271"><span class="linenos">271</span></a><span class="sd">    ┌────────────────┬──────────────────────────┬───────┬─────────┬──────────┬───────┬────────┬─────────┐</span>
+</span><span id="L-272"><a href="#L-272"><span class="linenos">272</span></a><span class="sd">    │ src_subject_id ┆ eventname                ┆ apap  ┆ apap_24 ┆ apap_ago ┆ ibu   ┆ ibu_24 ┆ ibu_ago │</span>
+</span><span id="L-273"><a href="#L-273"><span class="linenos">273</span></a><span class="sd">    │ ---            ┆ ---                      ┆ ---   ┆ ---     ┆ ---      ┆ ---   ┆ ---    ┆ ---     │</span>
+</span><span id="L-274"><a href="#L-274"><span class="linenos">274</span></a><span class="sd">    │ str            ┆ str                      ┆ bool  ┆ bool    ┆ f32      ┆ bool  ┆ bool   ┆ f32     │</span>
+</span><span id="L-275"><a href="#L-275"><span class="linenos">275</span></a><span class="sd">    ╞════════════════╪══════════════════════════╪═══════╪═════════╪══════════╪═══════╪════════╪═════════╡</span>
+</span><span id="L-276"><a href="#L-276"><span class="linenos">276</span></a><span class="sd">    │ AAAA1111       ┆ baseline_year_1_arm_1    ┆ true  ┆ false   ┆ null     ┆ false ┆ false  ┆ null    │</span>
+</span><span id="L-277"><a href="#L-277"><span class="linenos">277</span></a><span class="sd">    │ …              ┆ …                        ┆ …     ┆ …       ┆ …        ┆ …     ┆ …      ┆ …       │</span>
+</span><span id="L-278"><a href="#L-278"><span class="linenos">278</span></a><span class="sd">    │ BBBB2222       ┆ baseline_year_1_arm_1    ┆ false ┆ false   ┆ null     ┆ true  ┆ false  ┆ null    │</span>
+</span><span id="L-279"><a href="#L-279"><span class="linenos">279</span></a><span class="sd">    └────────────────┴──────────────────────────┴───────┴─────────┴──────────┴───────┴────────┴─────────┘</span>
+</span><span id="L-280"><a href="#L-280"><span class="linenos">280</span></a>
+</span><span id="L-281"><a href="#L-281"><span class="linenos">281</span></a><span class="sd">Count the number of participants taking both acetamimophen and ibuprofen at</span>
+</span><span id="L-282"><a href="#L-282"><span class="linenos">282</span></a><span class="sd">baseline.</span>
+</span><span id="L-283"><a href="#L-283"><span class="linenos">283</span></a><span class="sd">Example:</span>
+</span><span id="L-284"><a href="#L-284"><span class="linenos">284</span></a><span class="sd">    &gt;&gt;&gt; count = df_full_baseline.filter((polars.col(&#39;apap&#39;) == True) &amp; (polars.col(&#39;ibu&#39;) == True)).select(polars.count()).item()</span>
+</span><span id="L-285"><a href="#L-285"><span class="linenos">285</span></a><span class="sd">    &gt;&gt;&gt; count</span>
+</span><span id="L-286"><a href="#L-286"><span class="linenos">286</span></a><span class="sd">    53</span>
+</span><span id="L-287"><a href="#L-287"><span class="linenos">287</span></a>
+</span><span id="L-288"><a href="#L-288"><span class="linenos">288</span></a><span class="sd">Get a list of the participants taking both acetaminophen and ibuprofen at</span>
+</span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a><span class="sd">baseline.</span>
+</span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a><span class="sd">Example:</span>
+</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a><span class="sd">    &gt;&gt;&gt; ids = df_full_baseline.filter((polars.col(&#39;apap&#39;) == True) &amp; (polars.col(&#39;ibu&#39;) == True))</span>
+</span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a><span class="sd">    ...     get_column(&#39;src_subject_id&#39;)</span>
+</span><span id="L-293"><a href="#L-293"><span class="linenos">293</span></a><span class="sd">    ...     .to_list()</span>
+</span><span id="L-294"><a href="#L-294"><span class="linenos">294</span></a><span class="sd">    &gt;&gt;&gt; ids</span>
+</span><span id="L-295"><a href="#L-295"><span class="linenos">295</span></a><span class="sd">    [CCCC3333, ..., XXXX9999]</span>
+</span><span id="L-296"><a href="#L-296"><span class="linenos">296</span></a><span class="sd">    &gt;&gt;&gt; len(ids)</span>
+</span><span id="L-297"><a href="#L-297"><span class="linenos">297</span></a><span class="sd">    53</span>
+</span><span id="L-298"><a href="#L-298"><span class="linenos">298</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-299"><a href="#L-299"><span class="linenos">299</span></a>
+</span><span id="L-300"><a href="#L-300"><span class="linenos">300</span></a><span class="kn">from</span> <span class="nn">.event</span> <span class="kn">import</span> <span class="n">Event</span>
+</span><span id="L-301"><a href="#L-301"><span class="linenos">301</span></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">medparser</span>
+</span><span id="L-302"><a href="#L-302"><span class="linenos">302</span></a><span class="kn">from</span> <span class="nn">.medparser</span> <span class="kn">import</span> <span class="n">load_df</span><span class="p">,</span> <span class="n">make_table</span><span class="p">,</span> <span class="n">filter_events</span><span class="p">,</span> <span class="n">join</span>
+</span><span id="L-303"><a href="#L-303"><span class="linenos">303</span></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">nda_downloader</span>
+</span><span id="L-304"><a href="#L-304"><span class="linenos">304</span></a><span class="kn">from</span> <span class="nn">.nda_downloader</span> <span class="kn">import</span> <span class="n">NdaDownloader</span><span class="p">,</span> <span class="n">download</span>
+</span><span id="L-305"><a href="#L-305"><span class="linenos">305</span></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">rxnorm</span>
+</span><span id="L-306"><a href="#L-306"><span class="linenos">306</span></a><span class="kn">from</span> <span class="nn">.rxnorm</span> <span class="kn">import</span> <span class="n">rxcui_from_name</span><span class="p">,</span> <span class="n">ingredients</span><span class="p">,</span> <span class="n">related_rxcuis</span>
 </span></pre></div>
 
 
